@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON BOUNCE: ULTIMATE EXPANSION EDITION</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #060112;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 35px rgba(255, 0, 127, 0.5), 0 0 70px rgba(0, 242, 254, 0.3);
+            border-radius: 12px;
+        }
+
+        canvas {
+            border: 4px solid #ff007f;
+            background: radial-gradient(circle, #0f0c29, #240b36, #000000);
+            border-radius: 8px;
+            display: block;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(6, 1, 18, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #ff007f, #00f2fe, #ffe600);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        p {
+            color: #a0a0c0;
+            font-size: 11px;
+            margin: 0 0 10px 0;
+            text-align: center;
+        }
+
+        .mode-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 85%;
+        }
+
+        .shop-tabs {
+            display: flex;
+            gap: 5px;
+            width: 85%;
+            margin-bottom: 8px;
+        }
+
+        .shop-tab-btn {
+            flex: 1;
+            padding: 5px;
+            font-size: 9px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .shop-tab-btn.active {
+            background: linear-gradient(45deg, #ff007f, #00f2fe);
+            border-color: #fff;
+        }
+
+        .shop-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 85%;
+            max-height: 230px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding-right: 4px;
+        }
+
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            font-size: 11px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff007f, #7928ca);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(255, 0, 127, 0.4);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 18px rgba(0, 242, 254, 0.8);
+            background: linear-gradient(45deg, #00f2fe, #ffe600);
+            color: #060112;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .input-box {
+            padding: 8px;
+            font-size: 12px;
+            border-radius: 15px;
+            border: 2px solid #00f2fe;
+            background: #110826;
+            color: #ffe600;
+            text-align: center;
+            font-weight: bold;
+            letter-spacing: 2px;
+            width: 80%;
+            margin-bottom: 8px;
+            outline: none;
+        }
+
+        #loading-bar-container {
+            width: 70%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #00f2fe;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        #loading-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff007f, #00f2fe);
+            transition: width 0.1s linear;
+        }
+
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: bold;
+            color: #00f2fe;
+            text-shadow: 0 0 8px rgba(0, 242, 254, 0.8);
+            pointer-events: none;
+        }
+
+        #health-bars {
+            position: absolute;
+            top: 32px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .bar-wrap {
+            width: 90px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #ff007f;
+        }
+
+        .bar-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff007f, #00f2fe);
+            transition: width 0.1s ease;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 85%;
+            margin: 5px 0;
+            font-size: 11px;
+        }
+
+        .genre-select {
+            background: #110826;
+            color: #00f2fe;
+            border: 1px solid #00f2fe;
+            padding: 4px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="480" height="580"></canvas>
+
+        <div id="ui" class="hidden">
+            <div>SCORE: <span id="score-ui">0</span> | LVL: <span id="level-ui">1</span></div>
+            <div>MODE: <span id="mode-ui" style="color:#ff007f;">CLASSIC</span></div>
+            <div>🪙 <span id="coins-ui">0</span></div>
+        </div>
+
+        <div id="health-bars" class="hidden">
+            <div id="p1-hp-wrap" class="bar-wrap"><div id="p1-hp-fill" class="bar-fill"></div></div>
+            <div id="boss-hp-wrap" class="bar-wrap hidden" style="border-color:#ffe600;"><div id="boss-hp-fill" class="bar-fill" style="background: linear-gradient(90deg, #ffe600, #ff0055);"></div></div>
+        </div>
+
+        <div id="start-overlay" class="screen">
+            <h1>NEON BOUNCE</h1>
+            <p>🚀 ULTIMATE EXPANSION EDITION 🚀</p>
+            <button class="btn" id="btn-launch">LAUNCH GAME</button>
+        </div>
+
+        <div id="loading-screen" class="screen hidden">
+            <h1>LOADING SYSTEM</h1>
+            <div id="loading-bar-container">
+                <div id="loading-bar-fill"></div>
+            </div>
+            <p id="loading-status">SYNTHESIZING AUDIO ENGINE...</p>
+        </div>
+
+        <div id="title-screen" class="screen hidden">
+            <h1>NEON BOUNCE</h1>
+            <p style="color:#ffe600;">BEST: <span id="hi-score">0</span> | COINS: 🪙 <span id="title-coins">0</span></p>
+            <div class="mode-container">
+                <button class="btn" id="btn-sp-modes">🕹️ SINGLE PLAYER MODES</button>
+                <button class="btn" id="btn-pvp-lobby" style="background: linear-gradient(45deg, #00f2fe, #4facfe);">⚔️ PVP LOBBY (ROOM CODES)</button>
+                <button class="btn" id="btn-shop" style="background: linear-gradient(45deg, #ffe600, #ff007f);">🎨 MEGA SKIN & ITEM SHOP</button>
+                <button class="btn" id="btn-jukebox" style="background: linear-gradient(45deg, #9d00ff, #7928ca);">🎵 HIGH-FIDELITY JUKEBOX</button>
+            </div>
+        </div>
+
+        <div id="mode-screen" class="screen hidden">
+            <h1>CHOOSE MODE</h1>
+            <div class="mode-container" style="max-height: 320px; overflow-y: auto;">
+                <button class="btn mode-btn" data-mode="CLASSIC">🎮 CLASSIC BRICK BREAKER</button>
+                <button class="btn mode-btn" data-mode="CHAOS" style="background: linear-gradient(45deg, #ff0055, #ff5050);">🔥 CHAOS (DOUBLE BALLS)</button>
+                <button class="btn mode-btn" data-mode="SPEED RUN" style="background: linear-gradient(45deg, #00ff66, #00f2fe);">⚡ SPEED RUN</button>
+                <button class="btn mode-btn" data-mode="BOSS RUSH" style="background: linear-gradient(45deg, #ffe600, #ff007f);">👑 BOSS RUSH</button>
+                <button class="btn mode-btn" data-mode="GRAVITY FLIP" style="background: linear-gradient(45deg, #9d00ff, #7928ca);">🌀 GRAVITY FLIP</button>
+                <button class="btn mode-btn" data-mode="SURVIVAL" style="background: linear-gradient(45deg, #ff4500, #ffe600);">🛡️ SURVIVAL (NO SIDE WALLS)</button>
+                <button class="btn mode-btn" data-mode="INVISIBLE BALL" style="background: linear-gradient(45deg, #00f2fe, #ff007f);">👻 INVISIBLE BALL</button>
+            </div>
+            <button class="btn" id="btn-back-mode" style="margin-top: 10px; background: #333;">BACK</button>
+        </div>
+
+        <div id="pvp-screen" class="screen hidden">
+            <h1>PVP LOBBY</h1>
+            <p>HOST OR JOIN ROOM WITH CODE</p>
+            <button class="btn" id="btn-host-room" style="width:80%; margin-bottom:10px;">🔑 HOST ROOM (GENERATE CODE)</button>
+            <input type="text" id="lobby-code-input" class="input-box" placeholder="ROOM CODE..." maxlength="6">
+            <button class="btn" id="btn-join-room" style="width:80%; background: linear-gradient(45deg, #00ff66, #00f2fe);">⚡ JOIN LOBBY</button>
+            <p id="lobby-status" style="margin-top:8px; color:#ffe600;"></p>
+            <button class="btn" id="btn-back-pvp" style="margin-top:10px; background: #333;">BACK</button>
+        </div>
+
+        <div id="shop-screen" class="screen hidden">
+            <h1>MEGA SHOP</h1>
+            <p>BALANCE: 🪙 <span id="shop-coins">0</span> COINS</p>
+            
+            <div class="shop-tabs">
+                <button class="shop-tab-btn active" data-tab="skins">Skins</button>
+                <button class="shop-tab-btn" data-tab="ball_skins">Ball Skins</button>
+                <button class="shop-tab-btn" data-tab="upgrades">Upgrades</button>
+                <button class="shop-tab-btn" data-tab="boosts">Boosts</button>
+            </div>
+
+            <div class="shop-list" id="shop-list-container"></div>
+            <button class="btn" id="btn-back-shop">BACK</button>
+        </div>
+
+        <div id="music-screen" class="screen hidden">
+            <h1>JUKEBOX & SOUND</h1>
+            <div class="setting-control">
+                <label>ACTIVE GENRE:</label>
+                <select id="genre-picker" class="genre-select">
+                    <option value="CYBERPUNK">🌆 CYBERPUNK SYNTH</option>
+                    <option value="CHILL">☕ CHILL LO-FI CHORD</option>
+                    <option value="EDM_TRAP">🎧 EDM TRAP DROP</option>
+                    <option value="DNB">🥁 DRUM & BASS</option>
+                    <option value="8BIT">👾 8-BIT RETRO SYMPHONY</option>
+                    <option value="ROCK">🎸 HARD ROCK DISTORTION</option>
+                    <option value="JAZZ_FUSION">🎷 JAZZ FUSION GROOVE</option>
+                    <option value="SYNTHWAVE">🌅 SYNTHWAVE OUTRUN</option>
+                    <option value="ORCHESTRAL">🎻 EPIC CYBER ORCHESTRA</option>
+                    <option value="DUBSTEP">⚡ HEAVY DUBSTEP BASS</option>
+                </select>
+            </div>
+            <div class="setting-control">
+                <label>MUSIC VOL</label>
+                <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.5">
+            </div>
+            <div class="setting-control">
+                <label>SFX VOL</label>
+                <input type="range" id="sfx-vol" min="0" max="1" step="0.05" value="0.6">
+            </div>
+            <button class="btn" id="btn-back-music" style="margin-top: 15px;">SAVE & BACK</button>
+        </div>
+
+        <div id="game-over-screen" class="screen hidden">
+            <h1 id="over-title">GAME OVER</h1>
+            <p id="winner-text">SCORE: <span id="final-score">0</span></p>
+            <p>EARNED COINS: 🪙 <span id="earned-coins">0</span></p>
+            <button class="btn" id="btn-quit-menu">MAIN MENU</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const canvas = document.getElementById("gameCanvas");
+            const ctx = canvas.getContext("2d");
+
+            const startOverlay = document.getElementById("start-overlay");
+            const loadingScreen = document.getElementById("loading-screen");
+            const titleScreen = document.getElementById("title-screen");
+            const modeScreen = document.getElementById("mode-screen");
+            const pvpScreen = document.getElementById("pvp-screen");
+            const shopScreen = document.getElementById("shop-screen");
+            const musicScreen = document.getElementById("music-screen");
+            const gameOverScreen = document.getElementById("game-over-screen");
+            const ui = document.getElementById("ui");
+            const healthBars = document.getElementById("health-bars");
+
+            const scoreUI = document.getElementById("score-ui");
+            const levelUI = document.getElementById("level-ui");
+            const modeUI = document.getElementById("mode-ui");
+            const coinsUI = document.getElementById("coins-ui");
+            const hiScoreUI = document.getElementById("hi-score");
+            const titleCoinsUI = document.getElementById("title-coins");
+            const shopCoinsUI = document.getElementById("shop-coins");
+            const loadingBarFill = document.getElementById("loading-bar-fill");
+            const lobbyStatus = document.getElementById("lobby-status");
+
+            const p1HpFill = document.getElementById("p1-hp-fill");
+            const bossHpWrap = document.getElementById("boss-hp-wrap");
+            const bossHpFill = document.getElementById("boss-hp-fill");
+
+            const musicVolInput = document.getElementById("music-vol");
+            const sfxVolInput = document.getElementById("sfx-vol");
+
+            let audioCtx = null;
+            let masterGain = null;
+            let musicGain = null;
+            let sfxGain = null;
+            let musicTimer = null;
+            let musicVolume = 0.5;
+            let sfxVolume = 0.6;
+            let currentGenre = 'CYBERPUNK';
+            let musicStep = 0;
+
+            let gameRunning = false;
+            let isPvp = false;
+            let currentMode = 'CLASSIC';
+            let score = 0;
+            let currentLevel = 1;
+            let sessionCoins = 0;
+            let playerHealth = 3;
+            let maxPlayerHealth = 3;
+            let animFrameId = null;
+            let lastTime = 0;
+
+            let shieldActive = false;
+            let currentShopTab = 'skins';
+
+            let totalCoins = parseInt(localStorage.getItem("nb_coins")) || 0;
+            let highScore = parseInt(localStorage.getItem("nb_hi")) || 0;
+            let unlockedSkins = [];
+            let unlockedBallSkins = [];
+            let upgrades = { wide: 0, shield: 0, extra_hp: 0, magnet: 0, fire_ball: 0, multi_shot: 0, laser: 0 };
+            let consumables = { coin_doubler: 0 };
+
+            try { unlockedSkins = JSON.parse(localStorage.getItem("nb_skins")) || ['cyan']; } catch(e) { unlockedSkins = ['cyan']; }
+            let activeSkin = localStorage.getItem("nb_active_skin") || 'cyan';
+
+            try { unlockedBallSkins = JSON.parse(localStorage.getItem("nb_ball_skins")) || ['default']; } catch(e) { unlockedBallSkins = ['default']; }
+            let activeBallSkin = localStorage.getItem("nb_active_ball_skin") || 'default';
+
+            try { Object.assign(upgrades, JSON.parse(localStorage.getItem("nb_upgrades"))); } catch(e) {}
+            try { Object.assign(consumables, JSON.parse(localStorage.getItem("nb_boosts"))); } catch(e) {}
+
+            const skinCatalog = {
+                'cyan': { name: 'Cyan Glow', price: 0, fill: '#00f2fe', stroke: '#ffffff', glow: 'rgba(0, 242, 254, 0.8)' },
+                'pink': { name: 'Neon Pink', price: 100, fill: '#ff007f', stroke: '#ffb3d9', glow: 'rgba(255, 0, 127, 0.8)' },
+                'gold': { name: 'Cyber Gold', price: 250, fill: '#ffe600', stroke: '#ffffff', glow: 'rgba(255, 230, 0, 0.8)' },
+                'green': { name: 'Acid Green', price: 400, fill: '#00ff66', stroke: '#ccffdd', glow: 'rgba(0, 255, 102, 0.8)' },
+                'purple': { name: 'Plasma Purple', price: 600, fill: '#9d00ff', stroke: '#e6b3ff', glow: 'rgba(157, 0, 255, 0.8)' },
+                'sunset': { name: 'Solar Sunset', price: 850, fill: 'gradient_sunset', stroke: '#ffe600', glow: 'rgba(255, 100, 0, 0.8)' },
+                'matrix': { name: 'Matrix Code', price: 1100, fill: '#00ff44', stroke: '#ffffff', glow: 'rgba(0, 255, 68, 0.9)' },
+                'rainbow': { name: 'Rainbow Pulse', price: 1500, fill: 'animated_rainbow', stroke: '#ffffff', glow: 'rgba(255, 255, 255, 0.9)' },
+                'void': { name: 'Dark Matter', price: 2000, fill: '#110022', stroke: '#00f2fe', glow: 'rgba(0, 242, 254, 1)' }
+            };
+
+            const ballSkinCatalog = {
+                'default': { name: 'Standard Energy', price: 0, color: '#ffe600', glow: '#ffe600' },
+                'ruby': { name: 'Ruby Core', price: 150, color: '#ff0055', glow: '#ff0055' },
+                'plasma': { name: 'Plasma Orb', price: 350, color: '#00f2fe', glow: '#00f2fe' },
+                'emerald': { name: 'Emerald Spark', price: 600, color: '#00ff66', glow: '#00ff66' },
+                'cosmic': { name: 'Cosmic Star', price: 1000, color: '#9d00ff', glow: '#ff007f' }
+            };
+
+            const p1Paddle = { x: 190, y: 540, baseW: 100, w: 100, h: 14, skinKey: activeSkin };
+            const p2Paddle = { x: 190, y: 20, w: 100, h: 14, skinKey: 'pink' };
+
+            let balls = [];
+            let bricks = [];
+            let coins = [];
+            let powerups = [];
+            let particles = [];
+            let lasers = [];
+            let boss = null;
+
+            const musicTracks = {
+                'CYBERPUNK': { bpm: 125, bass: [55.00, 55.00, 65.41, 55.00, 73.42, 65.41, 55.00, 82.41], lead: [220.00, 261.63, 329.63, 261.63, 293.66, 329.63, 392.00, 329.63], pad: [[220, 261, 329], [174, 220, 261], [196, 246, 293], [164, 196, 246]], wave: 'sawtooth' },
+                'CHILL': { bpm: 90, bass: [130.81, 130.81, 146.83, 110.00], lead: [261.63, 329.63, 392.00, 493.88, 392.00, 329.63, 293.66, 261.63], pad: [[261, 329, 392, 493], [220, 261, 329, 392], [174, 220, 261, 329], [196, 246, 293, 349]], wave: 'sine' },
+                'EDM_TRAP': { bpm: 140, bass: [41.20, 41.20, 49.00, 41.20, 55.00, 49.00, 41.20, 36.71], lead: [329.63, 0, 329.63, 392.00, 0, 440.00, 392.00, 329.63], pad: [[164, 196, 246], [196, 246, 293], [220, 261, 329], [146, 174, 220]], wave: 'triangle' },
+                'DNB': { bpm: 170, bass: [55.00, 0, 55.00, 65.41, 0, 55.00, 73.42, 65.41], lead: [440.00, 523.25, 659.25, 523.25, 587.33, 659.25, 783.99, 659.25], pad: [[220, 261, 329], [261, 329, 392]], wave: 'sawtooth' },
+                '8BIT': { bpm: 135, bass: [110.00, 130.81, 146.83, 110.00, 164.81, 146.83, 130.81, 110.00], lead: [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25, 880.00, 659.25], pad: [[261, 329], [220, 261], [174, 220], [196, 246]], wave: 'square' },
+                'ROCK': { bpm: 130, bass: [82.41, 82.41, 98.00, 82.41, 110.00, 98.00, 82.41, 73.42], lead: [329.63, 329.63, 392.00, 329.63, 440.00, 392.00, 329.63, 293.66], pad: [[164, 196, 246], [196, 246, 293]], wave: 'sawtooth' },
+                'JAZZ_FUSION': { bpm: 115, bass: [146.83, 174.61, 196.00, 220.00, 196.00, 174.61, 146.83, 123.47], lead: [293.66, 349.23, 440.00, 523.25, 440.00, 349.23, 392.00, 329.63], pad: [[146, 185, 220, 261], [196, 246, 293, 349], [220, 261, 329, 392]], wave: 'sine' },
+                'SYNTHWAVE': { bpm: 118, bass: [65.41, 65.41, 73.42, 65.41, 82.41, 73.42, 65.41, 55.00], lead: [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 261.63], pad: [[130, 164, 196], [146, 174, 220], [164, 196, 246], [110, 130, 164]], wave: 'sawtooth' },
+                'ORCHESTRAL': { bpm: 100, bass: [43.65, 43.65, 51.91, 43.65, 58.27, 51.91, 43.65, 38.89], lead: [174.61, 220.00, 261.63, 349.23, 261.63, 220.00, 196.00, 174.61], pad: [[174, 220, 261], [130, 174, 220], [146, 185, 220], [116, 146, 174]], wave: 'sine' },
+                'DUBSTEP': { bpm: 140, bass: [36.71, 0, 36.71, 0, 41.20, 0, 36.71, 49.00], lead: [146.83, 293.66, 146.83, 349.23, 146.83, 392.00, 146.83, 440.00], pad: [[146, 174, 220], [164, 196, 246]], wave: 'sawtooth' }
+            };
+
+            const shopItems = [
+                { id: 'cyan', type: 'skin' }, { id: 'pink', type: 'skin' }, { id: 'gold', type: 'skin' },
+                { id: 'green', type: 'skin' }, { id: 'purple', type: 'skin' }, { id: 'sunset', type: 'skin' },
+                { id: 'matrix', type: 'skin' }, { id: 'rainbow', type: 'skin' }, { id: 'void', type: 'skin' },
+                { id: 'default', type: 'ball_skin' }, { id: 'ruby', type: 'ball_skin' }, { id: 'plasma', type: 'ball_skin' },
+                { id: 'emerald', type: 'ball_skin' }, { id: 'cosmic', type: 'ball_skin' },
+                { id: 'upgrade_wide', type: 'upgrade', name: '+10% Paddle Size', price: 150, key: 'wide', desc: 'Wider paddle baseline' },
+                { id: 'upgrade_shield', type: 'upgrade', name: 'Safety Bottom Shield', price: 300, key: 'shield', desc: 'Blocks 1 bottom miss' },
+                { id: 'upgrade_hp', type: 'upgrade', name: '+1 Max Base HP', price: 600, key: 'extra_hp', desc: 'Start with 4 Max HP' },
+                { id: 'upgrade_magnet', type: 'upgrade', name: 'Coin Magnet', price: 850, key: 'magnet', desc: 'Attracts falling coins' },
+                { id: 'upgrade_fire', type: 'upgrade', name: 'Fireball Power', price: 1200, key: 'fire_ball', desc: 'Pierces through bricks' },
+                { id: 'upgrade_multi', type: 'upgrade', name: 'Multi-Ball Start', price: 1500, key: 'multi_shot', desc: 'Start games with 2 balls' },
+                { id: 'upgrade_laser', type: 'upgrade', name: 'Paddle Laser Cannons', price: 2000, key: 'laser', desc: 'Shoot lasers at bricks' },
+                { id: 'boost_doubler', type: 'boost', name: '2x Coin Multiplier', price: 200, key: 'coin_doubler', desc: 'Double coins next game' }
+            ];
+
+            function updateCoinDisplays() {
+                hiScoreUI.textContent = highScore;
+                titleCoinsUI.textContent = totalCoins;
+                shopCoinsUI.textContent = totalCoins;
+                coinsUI.textContent = sessionCoins;
+            }
+            updateCoinDisplays();
+
+            function saveGameData() {
+                localStorage.setItem("nb_coins", totalCoins);
+                localStorage.setItem("nb_hi", highScore);
+                localStorage.setItem("nb_skins", JSON.stringify(unlockedSkins));
+                localStorage.setItem("nb_active_skin", activeSkin);
+                localStorage.setItem("nb_ball_skins", JSON.stringify(unlockedBallSkins));
+                localStorage.setItem("nb_active_ball_skin", activeBallSkin);
+                localStorage.setItem("nb_upgrades", JSON.stringify(upgrades));
+                localStorage.setItem("nb_boosts", JSON.stringify(consumables));
+            }
+
+            function initializeEngine() {
+                initAudio();
+                startOverlay.classList.add("hidden");
+                loadingScreen.classList.remove("hidden");
+                startMusicLoop();
+
+                let progress = 0;
+                const loadInterval = setInterval(() => {
+                    progress += 10;
+                    loadingBarFill.style.width = `${progress}%`;
+                    if (progress >= 100) {
+                        clearInterval(loadInterval);
+                        setTimeout(() => {
+                            loadingScreen.classList.add("hidden");
+                            titleScreen.classList.remove("hidden");
+                        }, 200);
+                    }
+                }, 30);
+            }
+
+            function initAudio() {
+                if (!audioCtx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) {
+                        audioCtx = new AudioCtx();
+                        masterGain = audioCtx.createGain();
+                        musicGain = audioCtx.createGain();
+                        sfxGain = audioCtx.createGain();
+
+                        musicGain.gain.value = musicVolume;
+                        sfxGain.gain.value = sfxVolume;
+
+                        musicGain.connect(masterGain);
+                        sfxGain.connect(masterGain);
+                        masterGain.connect(audioCtx.destination);
+                    }
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            function playSynthTone(freq, type, attack, decay, vol, targetNode) {
+                if (!audioCtx || freq <= 0) return;
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + attack);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + attack + decay);
+
+                    osc.connect(gain);
+                    gain.connect(targetNode);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + attack + decay + 0.05);
+                } catch(e) {}
+            }
+
+            function playSoundEffect(type) {
+                if (!sfxGain || sfxVolume <= 0) return;
+                if (type === 'hit') {
+                    playSynthTone(480, 'sine', 0.005, 0.08, 0.4, sfxGain);
+                } else if (type === 'paddle') {
+                    playSynthTone(320, 'triangle', 0.005, 0.12, 0.6, sfxGain);
+                } else if (type === 'brick') {
+                    playSynthTone(750, 'square', 0.005, 0.09, 0.3, sfxGain);
+                } else if (type === 'coin') {
+                    playSynthTone(987.77, 'sine', 0.005, 0.1, 0.5, sfxGain);
+                    setTimeout(() => playSynthTone(1318.51, 'sine', 0.005, 0.15, 0.5, sfxGain), 50);
+                } else if (type === 'powerup') {
+                    playSynthTone(523.25, 'sine', 0.005, 0.1, 0.5, sfxGain);
+                    setTimeout(() => playSynthTone(659.25, 'sine', 0.005, 0.1, 0.5, sfxGain), 60);
+                    setTimeout(() => playSynthTone(783.99, 'sine', 0.005, 0.15, 0.5, sfxGain), 120);
+                } else if (type === 'laser') {
+                    playSynthTone(880, 'sawtooth', 0.001, 0.05, 0.3, sfxGain);
+                } else if (type === 'damage') {
+                    playSynthTone(150, 'sawtooth', 0.01, 0.25, 0.8, sfxGain);
+                }
+            }
+
+            function scheduleNextBeat() {
+                if (!audioCtx) return;
+                const track = musicTracks[currentGenre] || musicTracks['CYBERPUNK'];
+                const step = musicStep % 16;
+
+                const bassNote = track.bass[step % track.bass.length];
+                const leadNote = track.lead[step % track.lead.length];
+                const padChord = track.pad[(Math.floor(step / 4)) % track.pad.length];
+
+                if (bassNote > 0) {
+                    playSynthTone(bassNote, track.wave, 0.01, 0.18, 0.35, musicGain);
+                }
+
+                if (leadNote > 0 && step % 2 === 0) {
+                    playSynthTone(leadNote, 'sine', 0.01, 0.14, 0.25, musicGain);
+                }
+
+                if (step % 4 === 0 && padChord) {
+                    padChord.forEach(freq => {
+                        playSynthTone(freq, 'triangle', 0.08, 0.45, 0.15, musicGain);
+                    });
+                }
+
+                musicStep++;
+                const beatMs = (60 / track.bpm) * 1000 / 4;
+                musicTimer = setTimeout(scheduleNextBeat, beatMs);
+            }
+
+            function startMusicLoop() {
+                stopMusicLoop();
+                musicStep = 0;
+                scheduleNextBeat();
+            }
+
+            function stopMusicLoop() {
+                if (musicTimer) clearTimeout(musicTimer);
+            }
+
+            const keys = {};
+            window.addEventListener("keydown", (e) => {
+                keys[e.key] = true;
+                if (e.key === " " && gameRunning && upgrades.laser) {
+                    shootLasers();
+                }
+            });
+            window.addEventListener("keyup", (e) => keys[e.key] = false);
+
+            canvas.addEventListener("mousemove", (e) => {
+                if (!gameRunning) return;
+                const rect = canvas.getBoundingClientRect();
+                p1Paddle.x = (e.clientX - rect.left) - p1Paddle.w / 2;
+                clampPaddle(p1Paddle);
+            });
+
+            canvas.addEventListener("click", () => {
+                if (gameRunning && upgrades.laser) shootLasers();
+            });
+
+            function clampPaddle(p) {
+                if (p.x < 0) p.x = 0;
+                if (p.x + p.w > canvas.width) p.x = canvas.width - p.w;
+            }
+
+            function shootLasers() {
+                lasers.push({ x: p1Paddle.x + 10, y: p1Paddle.y, vy: -10 });
+                lasers.push({ x: p1Paddle.x + p1Paddle.w - 10, y: p1Paddle.y, vy: -10 });
+                playSoundEffect('laser');
+            }
+
+            // Event Listeners for UI
+            document.getElementById("btn-launch").addEventListener("click", initializeEngine);
+            document.getElementById("btn-sp-modes").addEventListener("click", () => { titleScreen.classList.add("hidden"); modeScreen.classList.remove("hidden"); });
+            document.getElementById("btn-back-mode").addEventListener("click", () => { modeScreen.classList.add("hidden"); titleScreen.classList.remove("hidden"); });
+            document.getElementById("btn-pvp-lobby").addEventListener("click", () => { titleScreen.classList.add("hidden"); pvpScreen.classList.remove("hidden"); });
+            document.getElementById("btn-back-pvp").addEventListener("click", () => { pvpScreen.classList.add("hidden"); titleScreen.classList.remove("hidden"); });
+            document.getElementById("btn-shop").addEventListener("click", () => { renderShop(); titleScreen.classList.add("hidden"); shopScreen.classList.remove("hidden"); });
+            document.getElementById("btn-back-shop").addEventListener("click", () => { shopScreen.classList.add("hidden"); titleScreen.classList.remove("hidden"); });
+            document.getElementById("btn-jukebox").addEventListener("click", () => { titleScreen.classList.add("hidden"); musicScreen.classList.remove("hidden"); });
+            document.getElementById("btn-back-music").addEventListener("click", () => { musicScreen.classList.add("hidden"); titleScreen.classList.remove("hidden"); });
+            document.getElementById("btn-quit-menu").addEventListener("click", quitToMenu);
+
+            document.querySelectorAll(".mode-btn").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    currentMode = e.target.getAttribute("data-mode");
+                    isPvp = false;
+                    modeScreen.classList.add("hidden");
+                    startGame();
+                });
+            });
+
+            document.getElementById("btn-host-room").addEventListener("click", () => {
+                const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                document.getElementById("lobby-code-input").value = code;
+                lobbyStatus.textContent = `ROOM CREATED! CODE: ${code}. STARTING...`;
+                setTimeout(() => startPvpGame(), 1000);
+            });
+
+            document.getElementById("btn-join-room").addEventListener("click", () => {
+                const input = document.getElementById("lobby-code-input").value;
+                if (input.length >= 4) {
+                    lobbyStatus.textContent = `JOINED ${input.toUpperCase()}! STARTING...`;
+                    setTimeout(() => startPvpGame(), 1000);
+                } else {
+                    lobbyStatus.textContent = "ENTER A VALID ROOM CODE!";
+                }
+            });
+
+            document.querySelectorAll('.shop-tab-btn').forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    currentShopTab = e.target.getAttribute('data-tab');
+                    document.querySelectorAll('.shop-tab-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    renderShop();
+                });
+            });
+
+            document.getElementById("genre-picker").addEventListener("change", (e) => {
+                currentGenre = e.target.value;
+                startMusicLoop();
+            });
+
+            musicVolInput.addEventListener("input", (e) => {
+                musicVolume = parseFloat(e.target.value);
+                if (musicGain) musicGain.gain.value = musicVolume;
+            });
+
+            sfxVolInput.addEventListener("input", (e) => {
+                sfxVolume = parseFloat(e.target.value);
+                if (sfxGain) sfxGain.gain.value = sfxVolume;
+            });
+
+            function renderShop() {
+                updateCoinDisplays();
+                const container = document.getElementById("shop-list-container");
+                container.innerHTML = "";
+
+                const items = shopItems.filter(i => 
+                    (currentShopTab === 'skins' && i.type === 'skin') || 
+                    (currentShopTab === 'ball_skins' && i.type === 'ball_skin') || 
+                    (currentShopTab === 'upgrades' && i.type === 'upgrade') || 
+                    (currentShopTab === 'boosts' && i.type === 'boost')
+                );
+
+                items.forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = "shop-item";
+
+                    if (item.type === 'skin') {
+                        const skinData = skinCatalog[item.id];
+                        const isUnlocked = unlockedSkins.includes(item.id);
+                        const isActive = activeSkin === item.id;
+                        const previewColor = skinData.fill.startsWith('#') ? skinData.fill : '#ff007f';
+                        div.innerHTML = `
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:16px; height:16px; border-radius:3px; background:${previewColor}; border:1px solid ${skinData.stroke};"></div>
+                                <b>${skinData.name}</b>
+                            </div>
+                            <div>
+                                ${!isUnlocked ? `<span style="color:#ffe600; font-weight:bold; margin-right:8px;">🪙 ${skinData.price}</span>` : ''}
+                                <button class="btn shop-buy-btn" style="padding: 4px 8px; font-size:10px;" ${isActive ? 'disabled' : ''} data-id="${item.id}" data-type="skin" data-price="${skinData.price}">${isUnlocked ? (isActive ? 'EQUIPPED' : 'EQUIP') : 'BUY'}</button>
+                            </div>
+                        `;
+                    } else if (item.type === 'ball_skin') {
+                        const bSkin = ballSkinCatalog[item.id];
+                        const isUnlocked = unlockedBallSkins.includes(item.id);
+                        const isActive = activeBallSkin === item.id;
+                        div.innerHTML = `
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:14px; height:14px; border-radius:50%; background:${bSkin.color}; box-shadow:0 0 6px ${bSkin.glow};"></div>
+                                <b>${bSkin.name}</b>
+                            </div>
+                            <div>
+                                ${!isUnlocked ? `<span style="color:#ffe600; font-weight:bold; margin-right:8px;">🪙 ${bSkin.price}</span>` : ''}
+                                <button class="btn shop-buy-btn" style="padding: 4px 8px; font-size:10px;" ${isActive ? 'disabled' : ''} data-id="${item.id}" data-type="ball_skin" data-price="${bSkin.price}">${isUnlocked ? (isActive ? 'EQUIPPED' : 'EQUIP') : 'BUY'}</button>
+                            </div>
+                        `;
+                    } else if (item.type === 'upgrade') {
+                        const isPurchased = upgrades[item.key] > 0;
+                        div.innerHTML = `
+                            <div><b>${item.name}</b><div style="font-size:9px; color:#a0a0c0;">${item.desc}</div></div>
+                            <div>
+                                ${!isPurchased ? `<span style="color:#ffe600; font-weight:bold; margin-right:8px;">🪙 ${item.price}</span>` : ''}
+                                <button class="btn shop-buy-btn" style="padding: 4px 8px; font-size:10px;" ${isPurchased ? 'disabled' : ''} data-key="${item.key}" data-type="upgrade" data-price="${item.price}">${isPurchased ? 'OWNED' : 'BUY'}</button>
+                            </div>
+                        `;
+                    } else if (item.type === 'boost') {
+                        const count = consumables[item.key] || 0;
+                        div.innerHTML = `
+                            <div><b>${item.name}</b> (${count})<div style="font-size:9px; color:#a0a0c0;">${item.desc}</div></div>
+                            <div>
+                                <span style="color:#ffe600; font-weight:bold; margin-right:8px;">🪙 ${item.price}</span>
+                                <button class="btn shop-buy-btn" style="padding: 4px 8px; font-size:10px;" data-key="${item.key}" data-type="boost" data-price="${item.price}">BUY</button>
+                            </div>
+                        `;
+                    }
+                    container.appendChild(div);
+                });
+
+                document.querySelectorAll('.shop-buy-btn').forEach(b => {
+                    b.addEventListener("click", (e) => {
+                        const type = e.target.getAttribute('data-type');
+                        const price = parseInt(e.target.getAttribute('data-price'));
+                        if (type === 'skin') {
+                            const id = e.target.getAttribute('data-id');
+                            if (unlockedSkins.includes(id)) {
+                                activeSkin = id;
+                                p1Paddle.skinKey = id;
+                            } else if (totalCoins >= price) {
+                                totalCoins -= price;
+                                unlockedSkins.push(id);
+                                activeSkin = id;
+                                p1Paddle.skinKey = id;
+                            }
+                        } else if (type === 'ball_skin') {
+                            const id = e.target.getAttribute('data-id');
+                            if (unlockedBallSkins.includes(id)) {
+                                activeBallSkin = id;
+                            } else if (totalCoins >= price) {
+                                totalCoins -= price;
+                                unlockedBallSkins.push(id);
+                                activeBallSkin = id;
+                            }
+                        } else if (type === 'upgrade') {
+                            const key = e.target.getAttribute('data-key');
+                            if (totalCoins >= price && !upgrades[key]) {
+                                totalCoins -= price; upgrades[key] = 1;
+                            }
+                        } else if (type === 'boost') {
+                            const key = e.target.getAttribute('data-key');
+                            if (totalCoins >= price) {
+                                totalCoins -= price; consumables[key] = (consumables[key] || 0) + 1;
+                            }
+                        }
+                        saveGameData(); 
+                        renderShop();
+                    });
+                });
+            }
+
+            function startPvpGame() {
+                currentMode = 'PVP';
+                isPvp = true;
+                pvpScreen.classList.add("hidden");
+                startGame();
+            }
+
+            function createBall(speedMultiplier = 1) {
+                const bStyle = ballSkinCatalog[activeBallSkin] || ballSkinCatalog['default'];
+                return {
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    radius: 8,
+                    vx: (Math.random() > 0.5 ? 4 : -4) * speedMultiplier,
+                    vy: (Math.random() > 0.5 ? 4 : -4) * speedMultiplier,
+                    color: upgrades.fire_ball ? '#ff4500' : bStyle.color,
+                    glow: upgrades.fire_ball ? '#ff4500' : bStyle.glow,
+                    isFire: !!upgrades.fire_ball
+                };
+            }
+
+            function spawnParticles(x, y, color) {
+                for (let i = 0; i < 8; i++) {
+                    particles.push({
+                        x: x, y: y,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 6,
+                        radius: Math.random() * 3 + 1,
+                        color: color,
+                        life: 20
+                    });
+                }
+            }
+
+            function initBricks() {
+                bricks = [];
+                if (currentMode === 'PVP' || currentMode === 'BOSS RUSH') return;
+                const rows = 5 + Math.min(currentLevel - 1, 3);
+                const cols = 6;
+                const width = 68, height = 18, padding = 8, offsetLeft = 15, offsetTop = 60;
+                const colors = ["#ff007f", "#7928ca", "#00f2fe", "#ffe600", "#00ff66", "#ff4500", "#9d00ff"];
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const isExplosive = Math.random() < 0.1;
+                        bricks.push({
+                            x: c * (width + padding) + offsetLeft,
+                            y: r * (height + padding) + offsetTop,
+                            w: width, h: height,
+                            color: isExplosive ? '#ff0000' : colors[r % colors.length],
+                            active: true,
+                            hp: r === 0 ? 2 : 1,
+                            isExplosive: isExplosive
+                        });
+                    }
+                }
+            }
+
+            function spawnBoss() {
+                boss = { x: canvas.width / 2 - 60, y: 65, w: 120, h: 30, hp: 25 + (currentLevel * 5), maxHp: 25 + (currentLevel * 5), vx: 3, color: '#ffe600' };
+                bossHpWrap.classList.remove("hidden");
+                bossHpFill.style.width = "100%";
+            }
+
+            function startGame() {
+                gameRunning = true;
+                score = 0; currentLevel = 1; sessionCoins = 0;
+                maxPlayerHealth = upgrades.extra_hp ? 4 : 3;
+                playerHealth = maxPlayerHealth;
+
+                scoreUI.textContent = "0"; 
+                levelUI.textContent = "1";
+                coinsUI.textContent = "0"; 
+                modeUI.textContent = currentMode;
+
+                p1Paddle.w = upgrades.wide ? p1Paddle.baseW * 1.1 : p1Paddle.baseW;
+                p1Paddle.skinKey = activeSkin;
+                shieldActive = !!upgrades.shield;
+
+                let speedMult = currentMode === 'SPEED RUN' ? 1.7 : 1.0;
+                balls = [createBall(speedMult)];
+                if (currentMode === 'CHAOS' || upgrades.multi_shot) balls.push(createBall(speedMult));
+
+                coins = []; powerups = []; particles = []; lasers = []; boss = null;
+                bossHpWrap.classList.add("hidden");
+
+                if (currentMode === 'BOSS RUSH') spawnBoss();
+                else initBricks();
+
+                titleScreen.classList.add("hidden"); gameOverScreen.classList.add("hidden");
+                ui.classList.remove("hidden"); healthBars.classList.remove("hidden");
+                updatePlayerHealthHUD();
+
+                if (animFrameId) cancelAnimationFrame(animFrameId);
+                lastTime = performance.now();
+                gameLoop(lastTime);
+            }
+
+            function checkNextLevel() {
+                const activeBricks = bricks.filter(b => b.active);
+                if (activeBricks.length === 0 && !boss && currentMode !== 'PVP') {
+                    currentLevel++;
+                    levelUI.textContent = currentLevel;
+                    sessionCoins += 20;
+                    coinsUI.textContent = sessionCoins;
+                    playSoundEffect('powerup');
+                    if (currentMode === 'BOSS RUSH') spawnBoss();
+                    else initBricks();
+                }
+            }
+
+            function updatePlayerHealthHUD() {
+                p1HpFill.style.width = `${(playerHealth / maxPlayerHealth) * 100}%`;
+            }
+
+            function quitToMenu() {
+                gameRunning = false;
+                gameOverScreen.classList.add("hidden"); 
+                ui.classList.add("hidden"); 
+                healthBars.classList.add("hidden");
+                titleScreen.classList.remove("hidden"); 
+                updateCoinDisplays();
+            }
+
+            function endGame() {
+                gameRunning = false;
+                playSoundEffect('damage');
+                if (consumables.coin_doubler && consumables.coin_doubler > 0) {
+                    consumables.coin_doubler--; 
+                    sessionCoins *= 2;
+                }
+                totalCoins += sessionCoins;
+                if (score > highScore) { 
+                    highScore = score; 
+                    localStorage.setItem("nb_hi", highScore); 
+                }
+                saveGameData();
+
+                document.getElementById("winner-text").textContent = `FINAL SCORE: ${score}`;
+                document.getElementById("earned-coins").textContent = sessionCoins;
+                gameOverScreen.classList.remove("hidden"); 
+                ui.classList.add("hidden"); 
+                healthBars.classList.add("hidden");
+            }
+
+            function update(dt) {
+                if (!gameRunning) return;
+                const ts = dt / 16.66;
+
+                if (keys["ArrowLeft"] || keys["a"] || keys["A"]) p1Paddle.x -= 6 * ts;
+                if (keys["ArrowRight"] || keys["d"] || keys["D"]) p1Paddle.x += 6 * ts;
+                clampPaddle(p1Paddle);
+
+                if (isPvp) {
+                    if (keys["j"] || keys["J"]) p2Paddle.x -= 6 * ts;
+                    if (keys["l"] || keys["L"]) p2Paddle.x += 6 * ts;
+                    clampPaddle(p2Paddle);
+                } else if (balls.length > 0) {
+                    p2Paddle.x += (balls[0].x - (p2Paddle.x + p2Paddle.w / 2)) * 0.08 * ts;
+                    clampPaddle(p2Paddle);
+                }
+
+                if (boss) {
+                    boss.x += boss.vx * ts;
+                    if (boss.x <= 0 || boss.x + boss.w >= canvas.width) boss.vx *= -1;
+                }
+
+                for (let i = lasers.length - 1; i >= 0; i--) {
+                    let l = lasers[i];
+                    l.y += l.vy * ts;
+                    
+                    for (let j = 0; j < bricks.length; j++) {
+                        let br = bricks[j];
+                        if (!br.active) continue;
+                        if (l.x >= br.x && l.x <= br.x + br.w && l.y >= br.y && l.y <= br.y + br.h) {
+                            br.hp--;
+                            spawnParticles(l.x, l.y, br.color);
+                            playSoundEffect('brick');
+                            lasers.splice(i, 1);
+                            if (br.hp <= 0) {
+                                br.active = false;
+                                score += 10;
+                                scoreUI.textContent = score;
+                            }
+                            break;
+                        }
+                    }
+
+                    if (l.y < 0) lasers.splice(i, 1);
+                }
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    let p = particles[i];
+                    p.x += p.vx * ts;
+                    p.y += p.vy * ts;
+                    p.life -= ts;
+                    if (p.life <= 0) particles.splice(i, 1);
+                }
+
+                for (let i = balls.length - 1; i >= 0; i--) {
+                    let b = balls[i];
+                    if (currentMode === 'GRAVITY FLIP' && Math.random() < 0.005) b.vy *= -1;
+
+                    b.x += b.vx * ts; 
+                    b.y += b.vy * ts;
+
+                    if (b.x - b.radius < 0 || b.x + b.radius > canvas.width) {
+                        if (currentMode === 'SURVIVAL') {
+                            b.x = b.x < 0 ? canvas.width : 0;
+                        } else { 
+                            b.vx *= -1; 
+                            playSoundEffect('hit');
+                        }
+                    }
+
+                    if (b.y - b.radius < 0 && !isPvp) {
+                        b.vy *= -1; 
+                        playSoundEffect('hit');
+                    }
+
+                    if (b.y + b.radius >= p1Paddle.y && b.y - b.radius <= p1Paddle.y + p1Paddle.h &&
+                        b.x >= p1Paddle.x && b.x <= p1Paddle.x + p1Paddle.w) {
+                        b.vy = -Math.abs(b.vy);
+                        playSoundEffect('paddle');
+                    }
+
+                    if (isPvp && b.y - b.radius <= p2Paddle.y + p2Paddle.h && b.y + b.radius >= p2Paddle.y &&
+                        b.x >= p2Paddle.x && b.x <= p2Paddle.x + p2Paddle.w) {
+                        b.vy = Math.abs(b.vy);
+                        playSoundEffect('paddle');
+                    }
+
+                    if (boss && b.x + b.radius > boss.x && b.x - b.radius < boss.x + boss.w &&
+                        b.y + b.radius > boss.y && b.y - b.radius < boss.y + boss.h) {
+                        if (!b.isFire) b.vy *= -1;
+                        boss.hp--;
+                        score += 25;
+                        scoreUI.textContent = score;
+                        bossHpFill.style.width = `${(boss.hp / boss.maxHp) * 100}%`;
+                        spawnParticles(b.x, b.y, boss.color);
+                        playSoundEffect('brick');
+
+                        if (boss.hp <= 0) {
+                            score += 500; 
+                            sessionCoins += 25;
+                            coinsUI.textContent = sessionCoins;
+                            boss = null; 
+                            bossHpWrap.classList.add("hidden");
+                            checkNextLevel();
+                        }
+                    }
+
+                    for (let j = 0; j < bricks.length; j++) {
+                        let br = bricks[j];
+                        if (!br.active) continue;
+                        if (b.x + b.radius > br.x && b.x - b.radius < br.x + br.w &&
+                            b.y + b.radius > br.y && b.y - b.radius < br.y + br.h) {
+                            br.hp--;
+                            if (!b.isFire) b.vy *= -1;
+                            spawnParticles(b.x, b.y, br.color);
+                            playSoundEffect('brick');
+
+                            if (br.isExplosive) {
+                                for (let k = 0; k < bricks.length; k++) {
+                                    let nb = bricks[k];
+                                    if (nb.active && Math.hypot(nb.x - br.x, nb.y - br.y) < 90) {
+                                        nb.active = false;
+                                        score += 10;
+                                    }
+                                }
+                            }
+
+                            if (br.hp <= 0) {
+                                br.active = false;
+                                score += 10;
+                                scoreUI.textContent = score;
+                                if (Math.random() < 0.3) {
+                                    coins.push({ x: br.x + br.w/2, y: br.y, speedY: 2 });
+                                }
+                                if (Math.random() < 0.15) {
+                                    powerups.push({ x: br.x + br.w/2, y: br.y, type: Math.random() > 0.5 ? 'multiball' : 'expand', speedY: 1.8 });
+                                }
+                            }
+                            checkNextLevel();
+                            break;
+                        }
+                    }
+
+                    if (b.y - b.radius > canvas.height) {
+                        if (shieldActive) {
+                            shieldActive = false; 
+                            b.vy = -Math.abs(b.vy); 
+                            continue;
+                        }
+                        balls.splice(i, 1);
+                        if (balls.length === 0) {
+                            playerHealth--; 
+                            updatePlayerHealthHUD();
+                            playSoundEffect('damage');
+                            if (playerHealth > 0) balls.push(createBall());
+                            else endGame();
+                        }
+                    }
+                }
+
+                for (let i = powerups.length - 1; i >= 0; i--) {
+                    let p = powerups[i];
+                    p.y += p.speedY * ts;
+                    if (p.y + 8 >= p1Paddle.y && p.x >= p1Paddle.x && p.x <= p1Paddle.x + p1Paddle.w) {
+                        playSoundEffect('powerup');
+                        if (p.type === 'multiball') {
+                            balls.push(createBall());
+                        } else if (p.type === 'expand') {
+                            p1Paddle.w = Math.min(p1Paddle.w + 25, 180);
+                            setTimeout(() => p1Paddle.w = upgrades.wide ? p1Paddle.baseW * 1.1 : p1Paddle.baseW, 8000);
+                        }
+                        powerups.splice(i, 1);
+                    } else if (p.y > canvas.height) {
+                        powerups.splice(i, 1);
+                    }
+                }
+
+                for (let i = coins.length - 1; i >= 0; i--) {
+                    let c = coins[i];
+                    if (upgrades.magnet && Math.abs(c.x - (p1Paddle.x + p1Paddle.w / 2)) < 120 && c.y > canvas.height - 200) {
+                        c.x += ((p1Paddle.x + p1Paddle.w / 2) - c.x) * 0.05 * ts;
+                    }
+                    c.y += c.speedY * ts;
+                    if (c.y + 6 >= p1Paddle.y && c.x >= p1Paddle.x && c.x <= p1Paddle.x + p1Paddle.w) {
+                        sessionCoins += 5; 
+                        coinsUI.textContent = sessionCoins;
+                        playSoundEffect('coin');
+                        coins.splice(i, 1);
+                    } else if (c.y > canvas.height) {
+                        coins.splice(i, 1);
+                    }
+                }
+            }
+
+            function renderPaddle(p) {
+                const skin = skinCatalog[p.skinKey] || skinCatalog['cyan'];
+                
+                ctx.shadowColor = skin.glow;
+                ctx.shadowBlur = 12;
+
+                if (skin.fill === 'gradient_sunset') {
+                    const grad = ctx.createLinearGradient(p.x, p.y, p.x + p.w, p.y);
+                    grad.addColorStop(0, '#ff007f');
+                    grad.addColorStop(1, '#ffe600');
+                    ctx.fillStyle = grad;
+                } else if (skin.fill === 'animated_rainbow') {
+                    const hue = (performance.now() / 10) % 360;
+                    ctx.fillStyle = `hsl(${hue}, 100%, 60%)`;
+                } else {
+                    ctx.fillStyle = skin.fill;
+                }
+
+                ctx.fillRect(p.x, p.y, p.w, p.h);
+                ctx.strokeStyle = skin.stroke;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(p.x, p.y, p.w, p.h);
+
+                ctx.shadowBlur = 0;
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (!gameRunning) return;
+
+                if (shieldActive) {
+                    ctx.strokeStyle = "#00f2fe"; 
+                    ctx.lineWidth = 4;
+                    ctx.beginPath(); 
+                    ctx.moveTo(0, canvas.height - 5); 
+                    ctx.lineTo(canvas.width, canvas.height - 5); 
+                    ctx.stroke();
+                }
+
+                bricks.forEach(b => {
+                    if (!b.active) return;
+                    ctx.fillStyle = b.color; 
+                    ctx.fillRect(b.x, b.y, b.w, b.h);
+                    if (b.isExplosive) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(b.x + b.w/2 - 2, b.y + b.h/2 - 2, 4, 4);
+                    }
+                });
+
+                if (boss) {
+                    ctx.fillStyle = boss.color; 
+                    ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
+                }
+
+                lasers.forEach(l => {
+                    ctx.fillStyle = '#00f2fe';
+                    ctx.shadowColor = '#00f2fe';
+                    ctx.shadowBlur = 8;
+                    ctx.fillRect(l.x - 2, l.y, 4, 10);
+                    ctx.shadowBlur = 0;
+                });
+
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                renderPaddle(p1Paddle);
+                if (isPvp) renderPaddle(p2Paddle);
+
+                balls.forEach(b => {
+                    if (currentMode === 'INVISIBLE BALL' && Math.random() < 0.4) return;
+                    ctx.fillStyle = b.color; 
+                    ctx.shadowColor = b.glow;
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath(); 
+                    ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2); 
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                });
+
+                powerups.forEach(p => {
+                    ctx.fillStyle = p.type === 'multiball' ? '#00f2fe' : '#00ff66';
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                coins.forEach(c => {
+                    ctx.fillStyle = "#ffe600"; 
+                    ctx.shadowColor = "#ffe600";
+                    ctx.shadowBlur = 8;
+                    ctx.beginPath(); 
+                    ctx.arc(c.x, c.y, 6, 0, Math.PI * 2); 
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                });
+            }
+
+            function gameLoop(now) {
+                const dt = Math.min(now - lastTime, 100);
+                lastTime = now;
+                update(dt);
+                draw();
+                if (gameRunning) animFrameId = requestAnimationFrame(gameLoop);
+            }
+        });
+    </script>
+</body>
+</html>
