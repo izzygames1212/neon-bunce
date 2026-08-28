@@ -301,8 +301,8 @@
 
         <div id="pvp-screen" class="screen hidden">
             <h1>PVP LOBBY</h1>
-            <p>HOST OR JOIN ROOM WITH CODE</p>
-            <button class="btn" id="btn-host-room" style="width:80%; margin-bottom:10px;">🔑 HOST ROOM (GENERATE CODE)</button>
+            <p>P1: A/D Keys | P2: J/L Keys</p>
+            <button class="btn" id="btn-host-room" style="width:80%; margin-bottom:10px;">🔑 LOCAL PVP MATCH</button>
             <input type="text" id="lobby-code-input" class="input-box" placeholder="ROOM CODE..." maxlength="6">
             <button class="btn" id="btn-join-room" style="width:80%; background: linear-gradient(45deg, #00ff66, #00f2fe);">⚡ JOIN LOBBY</button>
             <p id="lobby-status" style="margin-top:8px; color:#ffe600;"></p>
@@ -352,6 +352,13 @@
             <button class="btn" id="btn-back-music" style="margin-top: 15px;">SAVE & BACK</button>
         </div>
 
+        <div id="pause-screen" class="screen hidden">
+            <h1>GAME PAUSED</h1>
+            <p>PRESS 'P' OR 'ESC' TO UNPAUSE</p>
+            <button class="btn" id="btn-resume" style="margin-bottom: 10px;">RESUME</button>
+            <button class="btn" id="btn-pause-quit" style="background: #333;">QUIT TO MENU</button>
+        </div>
+
         <div id="game-over-screen" class="screen hidden">
             <h1 id="over-title">GAME OVER</h1>
             <p id="winner-text">SCORE: <span id="final-score">0</span></p>
@@ -372,6 +379,7 @@
             const pvpScreen = document.getElementById("pvp-screen");
             const shopScreen = document.getElementById("shop-screen");
             const musicScreen = document.getElementById("music-screen");
+            const pauseScreen = document.getElementById("pause-screen");
             const gameOverScreen = document.getElementById("game-over-screen");
             const ui = document.getElementById("ui");
             const healthBars = document.getElementById("health-bars");
@@ -404,6 +412,7 @@
             let musicStep = 0;
 
             let gameRunning = false;
+            let isPaused = false;
             let isPvp = false;
             let currentMode = 'CLASSIC';
             let score = 0;
@@ -606,18 +615,10 @@
                 const leadNote = track.lead[step % track.lead.length];
                 const padChord = track.pad[(Math.floor(step / 4)) % track.pad.length];
 
-                if (bassNote > 0) {
-                    playSynthTone(bassNote, track.wave, 0.01, 0.18, 0.35, musicGain);
-                }
-
-                if (leadNote > 0 && step % 2 === 0) {
-                    playSynthTone(leadNote, 'sine', 0.01, 0.14, 0.25, musicGain);
-                }
-
+                if (bassNote > 0) playSynthTone(bassNote, track.wave, 0.01, 0.18, 0.35, musicGain);
+                if (leadNote > 0 && step % 2 === 0) playSynthTone(leadNote, 'sine', 0.01, 0.14, 0.25, musicGain);
                 if (step % 4 === 0 && padChord) {
-                    padChord.forEach(freq => {
-                        playSynthTone(freq, 'triangle', 0.08, 0.45, 0.15, musicGain);
-                    });
+                    padChord.forEach(freq => playSynthTone(freq, 'triangle', 0.08, 0.45, 0.15, musicGain));
                 }
 
                 musicStep++;
@@ -638,22 +639,37 @@
             const keys = {};
             window.addEventListener("keydown", (e) => {
                 keys[e.key] = true;
-                if (e.key === " " && gameRunning && upgrades.laser) {
+                
+                if ((e.key === "p" || e.key === "P" || e.key === "Escape") && gameRunning) {
+                    togglePause();
+                }
+
+                if (e.key === " " && gameRunning && !isPaused && upgrades.laser) {
                     shootLasers();
                 }
             });
             window.addEventListener("keyup", (e) => keys[e.key] = false);
 
             canvas.addEventListener("mousemove", (e) => {
-                if (!gameRunning) return;
+                if (!gameRunning || isPaused) return;
                 const rect = canvas.getBoundingClientRect();
                 p1Paddle.x = (e.clientX - rect.left) - p1Paddle.w / 2;
                 clampPaddle(p1Paddle);
             });
 
             canvas.addEventListener("click", () => {
-                if (gameRunning && upgrades.laser) shootLasers();
+                if (gameRunning && !isPaused && upgrades.laser) shootLasers();
             });
+
+            function togglePause() {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    pauseScreen.classList.remove("hidden");
+                } else {
+                    pauseScreen.classList.add("hidden");
+                    lastTime = performance.now();
+                }
+            }
 
             function clampPaddle(p) {
                 if (p.x < 0) p.x = 0;
@@ -676,6 +692,8 @@
             document.getElementById("btn-back-shop").addEventListener("click", () => { shopScreen.classList.add("hidden"); titleScreen.classList.remove("hidden"); });
             document.getElementById("btn-jukebox").addEventListener("click", () => { titleScreen.classList.add("hidden"); musicScreen.classList.remove("hidden"); });
             document.getElementById("btn-back-music").addEventListener("click", () => { musicScreen.classList.add("hidden"); titleScreen.classList.remove("hidden"); });
+            document.getElementById("btn-resume").addEventListener("click", () => { if (isPaused) togglePause(); });
+            document.getElementById("btn-pause-quit").addEventListener("click", () => { isPaused = false; pauseScreen.classList.add("hidden"); quitToMenu(); });
             document.getElementById("btn-quit-menu").addEventListener("click", quitToMenu);
 
             document.querySelectorAll(".mode-btn").forEach(btn => {
@@ -687,22 +705,8 @@
                 });
             });
 
-            document.getElementById("btn-host-room").addEventListener("click", () => {
-                const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-                document.getElementById("lobby-code-input").value = code;
-                lobbyStatus.textContent = `ROOM CREATED! CODE: ${code}. STARTING...`;
-                setTimeout(() => startPvpGame(), 1000);
-            });
-
-            document.getElementById("btn-join-room").addEventListener("click", () => {
-                const input = document.getElementById("lobby-code-input").value;
-                if (input.length >= 4) {
-                    lobbyStatus.textContent = `JOINED ${input.toUpperCase()}! STARTING...`;
-                    setTimeout(() => startPvpGame(), 1000);
-                } else {
-                    lobbyStatus.textContent = "ENTER A VALID ROOM CODE!";
-                }
-            });
+            document.getElementById("btn-host-room").addEventListener("click", () => startPvpGame());
+            document.getElementById("btn-join-room").addEventListener("click", () => startPvpGame());
 
             document.querySelectorAll('.shop-tab-btn').forEach(btn => {
                 btn.addEventListener("click", (e) => {
@@ -802,53 +806,35 @@
                         if (type === 'skin') {
                             const id = e.target.getAttribute('data-id');
                             if (unlockedSkins.includes(id)) {
-                                activeSkin = id;
-                                p1Paddle.skinKey = id;
+                                activeSkin = id; p1Paddle.skinKey = id;
                             } else if (totalCoins >= price) {
-                                totalCoins -= price;
-                                unlockedSkins.push(id);
-                                activeSkin = id;
-                                p1Paddle.skinKey = id;
+                                totalCoins -= price; unlockedSkins.push(id); activeSkin = id; p1Paddle.skinKey = id;
                             }
                         } else if (type === 'ball_skin') {
                             const id = e.target.getAttribute('data-id');
-                            if (unlockedBallSkins.includes(id)) {
-                                activeBallSkin = id;
-                            } else if (totalCoins >= price) {
-                                totalCoins -= price;
-                                unlockedBallSkins.push(id);
-                                activeBallSkin = id;
-                            }
+                            if (unlockedBallSkins.includes(id)) activeBallSkin = id;
+                            else if (totalCoins >= price) { totalCoins -= price; unlockedBallSkins.push(id); activeBallSkin = id; }
                         } else if (type === 'upgrade') {
                             const key = e.target.getAttribute('data-key');
-                            if (totalCoins >= price && !upgrades[key]) {
-                                totalCoins -= price; upgrades[key] = 1;
-                            }
+                            if (totalCoins >= price && !upgrades[key]) { totalCoins -= price; upgrades[key] = 1; }
                         } else if (type === 'boost') {
                             const key = e.target.getAttribute('data-key');
-                            if (totalCoins >= price) {
-                                totalCoins -= price; consumables[key] = (consumables[key] || 0) + 1;
-                            }
+                            if (totalCoins >= price) { totalCoins -= price; consumables[key] = (consumables[key] || 0) + 1; }
                         }
-                        saveGameData(); 
-                        renderShop();
+                        saveGameData(); renderShop();
                     });
                 });
             }
 
             function startPvpGame() {
-                currentMode = 'PVP';
-                isPvp = true;
-                pvpScreen.classList.add("hidden");
-                startGame();
+                currentMode = 'PVP'; isPvp = true;
+                pvpScreen.classList.add("hidden"); startGame();
             }
 
             function createBall(speedMultiplier = 1) {
                 const bStyle = ballSkinCatalog[activeBallSkin] || ballSkinCatalog['default'];
                 return {
-                    x: canvas.width / 2,
-                    y: canvas.height / 2,
-                    radius: 8,
+                    x: canvas.width / 2, y: canvas.height / 2, radius: 8,
                     vx: (Math.random() > 0.5 ? 4 : -4) * speedMultiplier,
                     vy: (Math.random() > 0.5 ? 4 : -4) * speedMultiplier,
                     color: upgrades.fire_ball ? '#ff4500' : bStyle.color,
@@ -861,11 +847,8 @@
                 for (let i = 0; i < 8; i++) {
                     particles.push({
                         x: x, y: y,
-                        vx: (Math.random() - 0.5) * 6,
-                        vy: (Math.random() - 0.5) * 6,
-                        radius: Math.random() * 3 + 1,
-                        color: color,
-                        life: 20
+                        vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6,
+                        radius: Math.random() * 3 + 1, color: color, life: 20
                     });
                 }
             }
@@ -886,9 +869,7 @@
                             y: r * (height + padding) + offsetTop,
                             w: width, h: height,
                             color: isExplosive ? '#ff0000' : colors[r % colors.length],
-                            active: true,
-                            hp: r === 0 ? 2 : 1,
-                            isExplosive: isExplosive
+                            active: true, hp: r === 0 ? 2 : 1, isExplosive: isExplosive
                         });
                     }
                 }
@@ -896,24 +877,20 @@
 
             function spawnBoss() {
                 boss = { x: canvas.width / 2 - 60, y: 65, w: 120, h: 30, hp: 25 + (currentLevel * 5), maxHp: 25 + (currentLevel * 5), vx: 3, color: '#ffe600' };
-                bossHpWrap.classList.remove("hidden");
-                bossHpFill.style.width = "100%";
+                bossHpWrap.classList.remove("hidden"); bossHpFill.style.width = "100%";
             }
 
             function startGame() {
-                gameRunning = true;
+                gameRunning = true; isPaused = false;
+                pauseScreen.classList.add("hidden");
                 score = 0; currentLevel = 1; sessionCoins = 0;
-                maxPlayerHealth = upgrades.extra_hp ? 4 : 3;
-                playerHealth = maxPlayerHealth;
+                maxPlayerHealth = upgrades.extra_hp ? 4 : 3; playerHealth = maxPlayerHealth;
 
-                scoreUI.textContent = "0"; 
-                levelUI.textContent = "1";
-                coinsUI.textContent = "0"; 
-                modeUI.textContent = currentMode;
+                scoreUI.textContent = "0"; levelUI.textContent = "1";
+                coinsUI.textContent = "0"; modeUI.textContent = currentMode;
 
                 p1Paddle.w = upgrades.wide ? p1Paddle.baseW * 1.1 : p1Paddle.baseW;
-                p1Paddle.skinKey = activeSkin;
-                shieldActive = !!upgrades.shield;
+                p1Paddle.skinKey = activeSkin; shieldActive = !!upgrades.shield;
 
                 let speedMult = currentMode === 'SPEED RUN' ? 1.7 : 1.0;
                 balls = [createBall(speedMult)];
@@ -922,28 +899,23 @@
                 coins = []; powerups = []; particles = []; lasers = []; boss = null;
                 bossHpWrap.classList.add("hidden");
 
-                if (currentMode === 'BOSS RUSH') spawnBoss();
-                else initBricks();
+                if (currentMode === 'BOSS RUSH') spawnBoss(); else initBricks();
 
                 titleScreen.classList.add("hidden"); gameOverScreen.classList.add("hidden");
                 ui.classList.remove("hidden"); healthBars.classList.remove("hidden");
                 updatePlayerHealthHUD();
 
                 if (animFrameId) cancelAnimationFrame(animFrameId);
-                lastTime = performance.now();
-                gameLoop(lastTime);
+                lastTime = performance.now(); gameLoop(lastTime);
             }
 
             function checkNextLevel() {
                 const activeBricks = bricks.filter(b => b.active);
                 if (activeBricks.length === 0 && !boss && currentMode !== 'PVP') {
-                    currentLevel++;
-                    levelUI.textContent = currentLevel;
-                    sessionCoins += 20;
-                    coinsUI.textContent = sessionCoins;
+                    currentLevel++; levelUI.textContent = currentLevel;
+                    sessionCoins += 20; coinsUI.textContent = sessionCoins;
                     playSoundEffect('powerup');
-                    if (currentMode === 'BOSS RUSH') spawnBoss();
-                    else initBricks();
+                    if (currentMode === 'BOSS RUSH') spawnBoss(); else initBricks();
                 }
             }
 
@@ -952,37 +924,28 @@
             }
 
             function quitToMenu() {
-                gameRunning = false;
-                gameOverScreen.classList.add("hidden"); 
-                ui.classList.add("hidden"); 
-                healthBars.classList.add("hidden");
-                titleScreen.classList.remove("hidden"); 
-                updateCoinDisplays();
+                gameRunning = false; isPaused = false;
+                pauseScreen.classList.add("hidden"); gameOverScreen.classList.add("hidden");
+                ui.classList.add("hidden"); healthBars.classList.add("hidden");
+                titleScreen.classList.remove("hidden"); updateCoinDisplays();
             }
 
             function endGame() {
-                gameRunning = false;
-                playSoundEffect('damage');
+                gameRunning = false; playSoundEffect('damage');
                 if (consumables.coin_doubler && consumables.coin_doubler > 0) {
-                    consumables.coin_doubler--; 
-                    sessionCoins *= 2;
+                    consumables.coin_doubler--; sessionCoins *= 2;
                 }
                 totalCoins += sessionCoins;
-                if (score > highScore) { 
-                    highScore = score; 
-                    localStorage.setItem("nb_hi", highScore); 
-                }
+                if (score > highScore) { highScore = score; localStorage.setItem("nb_hi", highScore); }
                 saveGameData();
 
                 document.getElementById("winner-text").textContent = `FINAL SCORE: ${score}`;
                 document.getElementById("earned-coins").textContent = sessionCoins;
-                gameOverScreen.classList.remove("hidden"); 
-                ui.classList.add("hidden"); 
-                healthBars.classList.add("hidden");
+                gameOverScreen.classList.remove("hidden"); ui.classList.add("hidden"); healthBars.classList.add("hidden");
             }
 
             function update(dt) {
-                if (!gameRunning) return;
+                if (!gameRunning || isPaused) return;
                 const ts = dt / 16.66;
 
                 if (keys["ArrowLeft"] || keys["a"] || keys["A"]) p1Paddle.x -= 6 * ts;
@@ -1004,34 +967,21 @@
                 }
 
                 for (let i = lasers.length - 1; i >= 0; i--) {
-                    let l = lasers[i];
-                    l.y += l.vy * ts;
-                    
+                    let l = lasers[i]; l.y += l.vy * ts;
                     for (let j = 0; j < bricks.length; j++) {
                         let br = bricks[j];
                         if (!br.active) continue;
                         if (l.x >= br.x && l.x <= br.x + br.w && l.y >= br.y && l.y <= br.y + br.h) {
-                            br.hp--;
-                            spawnParticles(l.x, l.y, br.color);
-                            playSoundEffect('brick');
-                            lasers.splice(i, 1);
-                            if (br.hp <= 0) {
-                                br.active = false;
-                                score += 10;
-                                scoreUI.textContent = score;
-                            }
+                            br.hp--; spawnParticles(l.x, l.y, br.color); playSoundEffect('brick'); lasers.splice(i, 1);
+                            if (br.hp <= 0) { br.active = false; score += 10; scoreUI.textContent = score; }
                             break;
                         }
                     }
-
                     if (l.y < 0) lasers.splice(i, 1);
                 }
 
                 for (let i = particles.length - 1; i >= 0; i--) {
-                    let p = particles[i];
-                    p.x += p.vx * ts;
-                    p.y += p.vy * ts;
-                    p.life -= ts;
+                    let p = particles[i]; p.x += p.vx * ts; p.y += p.vy * ts; p.life -= ts;
                     if (p.life <= 0) particles.splice(i, 1);
                 }
 
@@ -1039,52 +989,35 @@
                     let b = balls[i];
                     if (currentMode === 'GRAVITY FLIP' && Math.random() < 0.005) b.vy *= -1;
 
-                    b.x += b.vx * ts; 
-                    b.y += b.vy * ts;
+                    b.x += b.vx * ts; b.y += b.vy * ts;
 
                     if (b.x - b.radius < 0 || b.x + b.radius > canvas.width) {
-                        if (currentMode === 'SURVIVAL') {
-                            b.x = b.x < 0 ? canvas.width : 0;
-                        } else { 
-                            b.vx *= -1; 
-                            playSoundEffect('hit');
-                        }
+                        if (currentMode === 'SURVIVAL') b.x = b.x < 0 ? canvas.width : 0;
+                        else { b.vx *= -1; playSoundEffect('hit'); }
                     }
 
-                    if (b.y - b.radius < 0 && !isPvp) {
-                        b.vy *= -1; 
-                        playSoundEffect('hit');
-                    }
+                    if (b.y - b.radius < 0 && !isPvp) { b.vy *= -1; playSoundEffect('hit'); }
 
                     if (b.y + b.radius >= p1Paddle.y && b.y - b.radius <= p1Paddle.y + p1Paddle.h &&
                         b.x >= p1Paddle.x && b.x <= p1Paddle.x + p1Paddle.w) {
-                        b.vy = -Math.abs(b.vy);
-                        playSoundEffect('paddle');
+                        b.vy = -Math.abs(b.vy); playSoundEffect('paddle');
                     }
 
                     if (isPvp && b.y - b.radius <= p2Paddle.y + p2Paddle.h && b.y + b.radius >= p2Paddle.y &&
                         b.x >= p2Paddle.x && b.x <= p2Paddle.x + p2Paddle.w) {
-                        b.vy = Math.abs(b.vy);
-                        playSoundEffect('paddle');
+                        b.vy = Math.abs(b.vy); playSoundEffect('paddle');
                     }
 
                     if (boss && b.x + b.radius > boss.x && b.x - b.radius < boss.x + boss.w &&
                         b.y + b.radius > boss.y && b.y - b.radius < boss.y + boss.h) {
                         if (!b.isFire) b.vy *= -1;
-                        boss.hp--;
-                        score += 25;
-                        scoreUI.textContent = score;
+                        boss.hp--; score += 25; scoreUI.textContent = score;
                         bossHpFill.style.width = `${(boss.hp / boss.maxHp) * 100}%`;
-                        spawnParticles(b.x, b.y, boss.color);
-                        playSoundEffect('brick');
+                        spawnParticles(b.x, b.y, boss.color); playSoundEffect('brick');
 
                         if (boss.hp <= 0) {
-                            score += 500; 
-                            sessionCoins += 25;
-                            coinsUI.textContent = sessionCoins;
-                            boss = null; 
-                            bossHpWrap.classList.add("hidden");
-                            checkNextLevel();
+                            score += 500; sessionCoins += 25; coinsUI.textContent = sessionCoins;
+                            boss = null; bossHpWrap.classList.add("hidden"); checkNextLevel();
                         }
                     }
 
@@ -1093,69 +1026,54 @@
                         if (!br.active) continue;
                         if (b.x + b.radius > br.x && b.x - b.radius < br.x + br.w &&
                             b.y + b.radius > br.y && b.y - b.radius < br.y + br.h) {
-                            br.hp--;
-                            if (!b.isFire) b.vy *= -1;
-                            spawnParticles(b.x, b.y, br.color);
-                            playSoundEffect('brick');
+                            br.hp--; if (!b.isFire) b.vy *= -1;
+                            spawnParticles(b.x, b.y, br.color); playSoundEffect('brick');
 
                             if (br.isExplosive) {
                                 for (let k = 0; k < bricks.length; k++) {
                                     let nb = bricks[k];
-                                    if (nb.active && Math.hypot(nb.x - br.x, nb.y - br.y) < 90) {
-                                        nb.active = false;
-                                        score += 10;
-                                    }
+                                    if (nb.active && Math.hypot(nb.x - br.x, nb.y - br.y) < 90) { nb.active = false; score += 10; }
                                 }
                             }
 
                             if (br.hp <= 0) {
-                                br.active = false;
-                                score += 10;
-                                scoreUI.textContent = score;
-                                if (Math.random() < 0.3) {
-                                    coins.push({ x: br.x + br.w/2, y: br.y, speedY: 2 });
-                                }
-                                if (Math.random() < 0.15) {
-                                    powerups.push({ x: br.x + br.w/2, y: br.y, type: Math.random() > 0.5 ? 'multiball' : 'expand', speedY: 1.8 });
+                                br.active = false; score += 10; scoreUI.textContent = score;
+                                if (Math.random() < 0.3) coins.push({ x: br.x + br.w/2, y: br.y, speedY: 2 });
+                                if (Math.random() < 0.2) {
+                                    const types = ['multiball', 'expand', 'freeze', 'heal'];
+                                    powerups.push({ x: br.x + br.w/2, y: br.y, type: types[Math.floor(Math.random() * types.length)], speedY: 1.8 });
                                 }
                             }
-                            checkNextLevel();
-                            break;
+                            checkNextLevel(); break;
                         }
                     }
 
                     if (b.y - b.radius > canvas.height) {
-                        if (shieldActive) {
-                            shieldActive = false; 
-                            b.vy = -Math.abs(b.vy); 
-                            continue;
-                        }
+                        if (shieldActive) { shieldActive = false; b.vy = -Math.abs(b.vy); continue; }
                         balls.splice(i, 1);
                         if (balls.length === 0) {
-                            playerHealth--; 
-                            updatePlayerHealthHUD();
-                            playSoundEffect('damage');
-                            if (playerHealth > 0) balls.push(createBall());
-                            else endGame();
+                            playerHealth--; updatePlayerHealthHUD(); playSoundEffect('damage');
+                            if (playerHealth > 0) balls.push(createBall()); else endGame();
                         }
                     }
                 }
 
                 for (let i = powerups.length - 1; i >= 0; i--) {
-                    let p = powerups[i];
-                    p.y += p.speedY * ts;
+                    let p = powerups[i]; p.y += p.speedY * ts;
                     if (p.y + 8 >= p1Paddle.y && p.x >= p1Paddle.x && p.x <= p1Paddle.x + p1Paddle.w) {
                         playSoundEffect('powerup');
-                        if (p.type === 'multiball') {
-                            balls.push(createBall());
-                        } else if (p.type === 'expand') {
+                        if (p.type === 'multiball') balls.push(createBall());
+                        else if (p.type === 'expand') {
                             p1Paddle.w = Math.min(p1Paddle.w + 25, 180);
                             setTimeout(() => p1Paddle.w = upgrades.wide ? p1Paddle.baseW * 1.1 : p1Paddle.baseW, 8000);
+                        } else if (p.type === 'freeze') {
+                            balls.forEach(b => { b.vx *= 0.6; b.vy *= 0.6; });
+                            setTimeout(() => balls.forEach(b => { b.vx /= 0.6; b.vy /= 0.6; }), 5000);
+                        } else if (p.type === 'heal') {
+                            if (playerHealth < maxPlayerHealth) { playerHealth++; updatePlayerHealthHUD(); }
                         }
                         powerups.splice(i, 1);
-                    } else if (p.y > canvas.height) {
-                        powerups.splice(i, 1);
-                    }
+                    } else if (p.y > canvas.height) powerups.splice(i, 1);
                 }
 
                 for (let i = coins.length - 1; i >= 0; i--) {
@@ -1165,39 +1083,26 @@
                     }
                     c.y += c.speedY * ts;
                     if (c.y + 6 >= p1Paddle.y && c.x >= p1Paddle.x && c.x <= p1Paddle.x + p1Paddle.w) {
-                        sessionCoins += 5; 
-                        coinsUI.textContent = sessionCoins;
-                        playSoundEffect('coin');
-                        coins.splice(i, 1);
-                    } else if (c.y > canvas.height) {
-                        coins.splice(i, 1);
-                    }
+                        sessionCoins += 5; coinsUI.textContent = sessionCoins;
+                        playSoundEffect('coin'); coins.splice(i, 1);
+                    } else if (c.y > canvas.height) coins.splice(i, 1);
                 }
             }
 
             function renderPaddle(p) {
                 const skin = skinCatalog[p.skinKey] || skinCatalog['cyan'];
-                
-                ctx.shadowColor = skin.glow;
-                ctx.shadowBlur = 12;
+                ctx.shadowColor = skin.glow; ctx.shadowBlur = 12;
 
                 if (skin.fill === 'gradient_sunset') {
                     const grad = ctx.createLinearGradient(p.x, p.y, p.x + p.w, p.y);
-                    grad.addColorStop(0, '#ff007f');
-                    grad.addColorStop(1, '#ffe600');
+                    grad.addColorStop(0, '#ff007f'); grad.addColorStop(1, '#ffe600');
                     ctx.fillStyle = grad;
                 } else if (skin.fill === 'animated_rainbow') {
-                    const hue = (performance.now() / 10) % 360;
-                    ctx.fillStyle = `hsl(${hue}, 100%, 60%)`;
-                } else {
-                    ctx.fillStyle = skin.fill;
-                }
+                    const hue = (performance.now() / 10) % 360; ctx.fillStyle = `hsl(${hue}, 100%, 60%)`;
+                } else ctx.fillStyle = skin.fill;
 
                 ctx.fillRect(p.x, p.y, p.w, p.h);
-                ctx.strokeStyle = skin.stroke;
-                ctx.lineWidth = 2;
-                ctx.strokeRect(p.x, p.y, p.w, p.h);
-
+                ctx.strokeStyle = skin.stroke; ctx.lineWidth = 2; ctx.strokeRect(p.x, p.y, p.w, p.h);
                 ctx.shadowBlur = 0;
             }
 
@@ -1206,42 +1111,27 @@
                 if (!gameRunning) return;
 
                 if (shieldActive) {
-                    ctx.strokeStyle = "#00f2fe"; 
-                    ctx.lineWidth = 4;
-                    ctx.beginPath(); 
-                    ctx.moveTo(0, canvas.height - 5); 
-                    ctx.lineTo(canvas.width, canvas.height - 5); 
-                    ctx.stroke();
+                    ctx.strokeStyle = "#00f2fe"; ctx.lineWidth = 4;
+                    ctx.beginPath(); ctx.moveTo(0, canvas.height - 5); ctx.lineTo(canvas.width, canvas.height - 5); ctx.stroke();
                 }
 
                 bricks.forEach(b => {
                     if (!b.active) return;
-                    ctx.fillStyle = b.color; 
-                    ctx.fillRect(b.x, b.y, b.w, b.h);
+                    ctx.fillStyle = b.color; ctx.fillRect(b.x, b.y, b.w, b.h);
                     if (b.isExplosive) {
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(b.x + b.w/2 - 2, b.y + b.h/2 - 2, 4, 4);
+                        ctx.fillStyle = '#ffffff'; ctx.fillRect(b.x + b.w/2 - 2, b.y + b.h/2 - 2, 4, 4);
                     }
                 });
 
-                if (boss) {
-                    ctx.fillStyle = boss.color; 
-                    ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
-                }
+                if (boss) { ctx.fillStyle = boss.color; ctx.fillRect(boss.x, boss.y, boss.w, boss.h); }
 
                 lasers.forEach(l => {
-                    ctx.fillStyle = '#00f2fe';
-                    ctx.shadowColor = '#00f2fe';
-                    ctx.shadowBlur = 8;
-                    ctx.fillRect(l.x - 2, l.y, 4, 10);
-                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#00f2fe'; ctx.shadowColor = '#00f2fe'; ctx.shadowBlur = 8;
+                    ctx.fillRect(l.x - 2, l.y, 4, 10); ctx.shadowBlur = 0;
                 });
 
                 particles.forEach(p => {
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
                 });
 
                 renderPaddle(p1Paddle);
@@ -1249,30 +1139,21 @@
 
                 balls.forEach(b => {
                     if (currentMode === 'INVISIBLE BALL' && Math.random() < 0.4) return;
-                    ctx.fillStyle = b.color; 
-                    ctx.shadowColor = b.glow;
-                    ctx.shadowBlur = 10;
-                    ctx.beginPath(); 
-                    ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2); 
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = b.color; ctx.shadowColor = b.glow; ctx.shadowBlur = 10;
+                    ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
                 });
 
                 powerups.forEach(p => {
-                    ctx.fillStyle = p.type === 'multiball' ? '#00f2fe' : '#00ff66';
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
-                    ctx.fill();
+                    if (p.type === 'multiball') ctx.fillStyle = '#00f2fe';
+                    else if (p.type === 'expand') ctx.fillStyle = '#00ff66';
+                    else if (p.type === 'freeze') ctx.fillStyle = '#ffe600';
+                    else if (p.type === 'heal') ctx.fillStyle = '#ff007f';
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI * 2); ctx.fill();
                 });
 
                 coins.forEach(c => {
-                    ctx.fillStyle = "#ffe600"; 
-                    ctx.shadowColor = "#ffe600";
-                    ctx.shadowBlur = 8;
-                    ctx.beginPath(); 
-                    ctx.arc(c.x, c.y, 6, 0, Math.PI * 2); 
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = "#ffe600"; ctx.shadowColor = "#ffe600"; ctx.shadowBlur = 8;
+                    ctx.beginPath(); ctx.arc(c.x, c.y, 6, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
                 });
             }
 
