@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tuff Game Hub</title>
+  <title>Tuff Game Hub - Mega Edition v8.0</title>
   <style>
-    /* Base Styling */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Roboto, sans-serif;
     }
 
     body {
-      background-color: #121212;
-      color: #ffffff;
+      background-color: #08090c;
+      color: #c5c6c7;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow-x: hidden;
     }
 
     /* Loading Screen */
@@ -29,7 +29,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: #0a0a0c;
+      background-color: #08090c;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -37,246 +37,696 @@
       z-index: 100;
     }
 
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid #333;
-      border-top: 5px solid #ff0055;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    .loader-box {
+      width: 320px;
+      height: 18px;
+      background: #1f2833;
+      border: 2px solid #45a29e;
+      border-radius: 10px;
+      overflow: hidden;
       margin-top: 20px;
     }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .loader-fill {
+      width: 0%;
+      height: 100%;
+      background: #66fcf1;
+      transition: width 0.08s linear;
     }
 
-    /* HUD / UI Header */
+    /* Main Menu Overlay */
+    #main-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, #1f2833 0%, #08090c 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 90;
+    }
+
+    .menu-title {
+      font-size: 4rem;
+      color: #66fcf1;
+      text-shadow: 0 0 25px rgba(102, 252, 241, 0.6);
+      margin-bottom: 30px;
+      letter-spacing: 4px;
+    }
+
+    .menu-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 280px;
+    }
+
+    /* Top HUD Navigation */
     #game-ui {
       width: 100%;
-      padding: 20px;
-      background: #1a1a1d;
+      padding: 12px 25px;
+      background: #12161c;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      border-bottom: 2px solid #45a29e;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    }
+
+    .hud-buttons {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .nav-btn, .action-btn {
-      background: #ff0055;
-      color: white;
+      background: #45a29e;
+      color: #0b0c10;
       border: none;
-      padding: 10px 20px;
+      padding: 9px 15px;
       font-weight: bold;
       cursor: pointer;
-      border-radius: 5px;
-      transition: 0.2s;
+      border-radius: 4px;
+      text-transform: uppercase;
+      transition: 0.2s ease;
     }
 
     .nav-btn:hover, .action-btn:hover {
-      background: #ff3377;
+      background: #66fcf1;
+      box-shadow: 0 0 12px #66fcf1;
     }
 
-    /* Modals (Settings & Shop) */
+    .action-btn.equipped {
+      background: #1f2833;
+      color: #66fcf1;
+      border: 1px solid #66fcf1;
+      cursor: default;
+    }
+
+    .level-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #08090c;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid #45a29e;
+    }
+
+    .xp-bar-bg {
+      width: 90px;
+      height: 10px;
+      background: #1f2833;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .xp-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #66fcf1;
+      transition: width 0.3s ease;
+    }
+
+    /* Canvas Arena */
+    #game-canvas-container {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pvp-hud {
+      width: 700px;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .health-bar-container {
+      width: 240px;
+      height: 14px;
+      background: #1f2833;
+      border: 1px solid #45a29e;
+      border-radius: 7px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .health-fill {
+      height: 100%;
+      width: 100%;
+      transition: width 0.15s ease;
+    }
+
+    #player-health-fill { background: #66fcf1; }
+    #enemy-health-fill { background: #ff0055; }
+
+    canvas {
+      border: 2px solid #66fcf1;
+      border-radius: 8px;
+      background: #0d1117;
+      box-shadow: 0 0 25px rgba(102, 252, 241, 0.2);
+    }
+
+    /* Modals */
     .modal {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 80%;
-      max-width: 800px;
-      max-height: 80vh;
-      background: #1a1a24;
-      border: 2px solid #ff0055;
-      border-radius: 10px;
-      padding: 20px;
+      width: 88%;
+      max-width: 950px;
+      max-height: 85vh;
+      background: #0d1117;
+      border: 2px solid #66fcf1;
+      border-radius: 8px;
+      padding: 25px;
       overflow-y: auto;
       z-index: 10;
+      box-shadow: 0 0 30px rgba(102, 252, 241, 0.25);
     }
 
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none !important; }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
-      border-bottom: 1px solid #333;
+      border-bottom: 1px solid #1f2833;
       padding-bottom: 10px;
     }
 
-    /* Shop Layout */
-    .shop-section-title {
-      color: #ff0055;
-      margin: 15px 0 10px 0;
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
     }
 
-    .shop-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 15px;
+    .card {
+      background: #161b22;
+      border: 1px solid #45a29e;
+      border-radius: 6px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .card.unlocked {
+      border-color: #ffd700;
+      background: #23221b;
+    }
+
+    .quest-card {
+      background: #161b22;
+      border-left: 5px solid #45a29e;
+      padding: 15px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 4px;
+    }
+
+    .shop-tabs {
+      display: flex;
+      gap: 10px;
       margin-bottom: 20px;
     }
 
-    .shop-card {
-      background: #252533;
-      border: 1px solid #444;
-      border-radius: 8px;
-      padding: 15px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+    .rarity-tag {
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: inline-block;
     }
 
-    .shop-card.bundle {
-      border: 2px solid #ffd700;
-    }
-
-    .shop-card h4 {
-      margin-bottom: 10px;
-    }
-
-    .shop-card p {
-      color: #aaa;
-      margin-bottom: 15px;
-    }
+    .rarity-legendary { color: #ffd700; }
+    .rarity-epic { color: #b197fc; }
+    .rarity-rare { color: #4dabf7; }
   </style>
 </head>
 <body>
 
   <div id="loading-screen">
-    <h1 style="color: #ff0055; font-size: 2.5rem;">LOADING TUFF GAME...</h1>
-    <div class="spinner"></div>
-    <button id="start-btn" class="action-btn" style="display:none; margin-top:20px;" onclick="enterGame()">PRESS TO START</button>
+    <h1 style="color: #66fcf1; font-size: 2.5rem; letter-spacing: 2px;">LOADING MEGA HUB...</h1>
+    <div class="loader-box">
+      <div id="loader-fill" class="loader-fill"></div>
+    </div>
+    <p id="loader-text" style="margin-top: 10px; color: #45a29e; font-weight: bold;">0%</p>
+    <button id="start-btn" class="action-btn" style="display:none; margin-top:20px; font-size: 1.2rem;" onclick="enterGame()">PRESS TO START</button>
+  </div>
+
+  <div id="main-menu" class="hidden">
+    <h1 class="menu-title">TUFF GAME HUB</h1>
+    <div class="menu-buttons">
+      <button class="action-btn" onclick="openGameHub()">Play Game</button>
+      <button class="action-btn" onclick="openGameHub(); toggleModal('singleplayer-modal');">Game Modes</button>
+      <button class="action-btn" onclick="openGameHub(); toggleModal('shop-modal');">Item Shop</button>
+      <button class="action-btn" onclick="openGameHub(); toggleModal('skills-modal');">Skill Tree</button>
+      <button class="action-btn" onclick="openGameHub(); toggleModal('stats-modal');">Profile & Stats</button>
+      <button class="action-btn" onclick="openGameHub(); toggleModal('settings-modal');">Settings</button>
+    </div>
   </div>
 
   <audio id="bg-music" loop>
-    <source src="assets/tuff_track.mp3" type="audio/mpeg">
+    <source id="audio-source" src="assets/tuff_track.mp3" type="audio/mpeg">
   </audio>
 
   <div id="game-ui">
-    <div>
-      <button class="nav-btn" onclick="toggleModal('settings-modal')">Settings</button>
-      <button class="nav-btn" onclick="toggleModal('shop-modal')">Item Shop</button>
+    <div class="hud-buttons">
+      <button class="nav-btn" onclick="openMainMenu()">Main Menu</button>
+      <button class="nav-btn" onclick="toggleModal('singleplayer-modal')">Modes</button>
+      <button class="nav-btn" onclick="toggleModal('shop-modal')">Shop</button>
+      <button class="nav-btn" onclick="toggleModal('skills-modal')">Skill Tree</button>
+      <button class="nav-btn" onclick="toggleModal('quests-modal')">Goals</button>
+      <button class="nav-btn" onclick="toggleModal('achieve-modal')">Trophies</button>
+      <button class="nav-btn" onclick="toggleModal('stats-modal')">Stats</button>
     </div>
-    <h2>Coins: <span id="coin-count" style="color: #ffd700;">5000</span></h2>
+
+    <div style="display: flex; align-align: center; gap: 12px;">
+      <div class="level-container">
+        <span style="font-weight: bold; color: #66fcf1;">Lvl <span id="level-display">1</span></span>
+        <div class="xp-bar-bg">
+          <div id="xp-fill" class="xp-bar-fill"></div>
+        </div>
+      </div>
+      <h2>Coins: <span id="coin-count" style="color: #ffd700;">5000</span></h2>
+    </div>
   </div>
 
-  <div style="margin-top: 100px; text-align: center;">
-    <h1>Game Active</h1>
-    <p>Use the HUD buttons to open Settings or the Item Shop.</p>
+  <div id="game-canvas-container">
+    <div class="pvp-hud">
+      <div>
+        <span>You (<span id="player-skin-name">Renegade</span>) | Pet: <span id="player-pet-name" style="color:#66fcf1;">None</span></span>
+        <div class="health-bar-container">
+          <div id="player-health-fill" class="health-fill"></div>
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <span id="enemy-title">PvP Opponent</span>
+        <div class="health-bar-container">
+          <div id="enemy-health-fill" class="health-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <canvas id="gameCanvas" width="700" height="340"></canvas>
+    <p style="margin-top: 8px; font-size: 0.85rem; color: #aaa;">
+      <b>WASD / Arrows</b> Move | <b>SPACE</b> Attack | <b>E</b> Blast (CD: <span id="cd-timer">Ready</span>) | <b>Q</b> Ultimate Burst (CD: <span id="ult-cd-timer">Ready</span>)
+    </p>
+  </div>
+
+  <div id="skills-modal" class="modal hidden">
+    <div class="modal-header">
+      <h2 style="color: #66fcf1;">Skill Tree Upgrade Center</h2>
+      <button class="action-btn" onclick="toggleModal('skills-modal')">X</button>
+    </div>
+    <p>Available Skill Points: <b id="skill-points-display" style="color:#ffd700;">0</b></p>
+    <div class="grid-container">
+      <div class="card">
+        <h3>Attack Power Boost</h3>
+        <p style="margin: 8px 0; font-size: 0.9rem;">Increase base damage by +5 per level.</p>
+        <p>Level: <b id="skill-atk-lvl">0</b></p>
+        <button class="action-btn" style="margin-top:10px;" onclick="upgradeSkill('atk')">Upgrade (+1 SP)</button>
+      </div>
+      <div class="card">
+        <h3>Max Health Boost</h3>
+        <p style="margin: 8px 0; font-size: 0.9rem;">Increase health capacity by +20 per level.</p>
+        <p>Level: <b id="skill-hp-lvl">0</b></p>
+        <button class="action-btn" style="margin-top:10px;" onclick="upgradeSkill('hp')">Upgrade (+1 SP)</button>
+      </div>
+      <div class="card">
+        <h3>Speed Boost</h3>
+        <p style="margin: 8px 0; font-size: 0.9rem;">Increase move speed in arena.</p>
+        <p>Level: <b id="skill-spd-lvl">0</b></p>
+        <button class="action-btn" style="margin-top:10px;" onclick="upgradeSkill('spd')">Upgrade (+1 SP)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="singleplayer-modal" class="modal hidden">
+    <div class="modal-header">
+      <h2 style="color: #66fcf1;">Select Game Mode</h2>
+      <button class="action-btn" onclick="toggleModal('singleplayer-modal')">X</button>
+    </div>
+    <div class="grid-container">
+      <div class="card">
+        <h3>PvP Arena</h3>
+        <p>1v1 real-time combat against dynamic AI!</p>
+        <button class="action-btn" style="margin-top:10px;" onclick="selectMode('PvP Arena')">Play</button>
+      </div>
+      <div class="card">
+        <h3>Mega Boss Hunt</h3>
+        <p>Battle a massive boss with heavy health pools!</p>
+        <button class="action-btn" style="margin-top:10px;" onclick="selectMode('Boss Hunt')">Play</button>
+      </div>
+      <div class="card">
+        <h3>Endless Survival</h3>
+        <p>Outlast waves of aggressive enemies!</p>
+        <button class="action-btn" style="margin-top:10px;" onclick="selectMode('Survival')">Play</button>
+      </div>
+      <div class="card">
+        <h3>Solo Freeplay</h3>
+        <p>Test weapons, skins, and pets freely.</p>
+        <button class="action-btn" style="margin-top:10px;" onclick="selectMode('Solo Freeplay')">Play</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="shop-modal" class="modal hidden">
+    <div class="modal-header">
+      <h2 style="color: #66fcf1;">Item Shop & Companion Depot</h2>
+      <button class="action-btn" onclick="toggleModal('shop-modal')">X</button>
+    </div>
+    <div class="shop-tabs">
+      <button class="nav-btn" onclick="switchShopTab('skins')">Skins</button>
+      <button class="nav-btn" onclick="switchShopTab('weapons')">Weapons</button>
+      <button class="nav-btn" onclick="switchShopTab('pets')">Pets / Drones</button>
+      <button class="nav-btn" onclick="switchShopTab('bundles')">Bundles</button>
+    </div>
+    <div id="shop-items-container" class="grid-container"></div>
+  </div>
+
+  <div id="stats-modal" class="modal hidden">
+    <div class="modal-header">
+      <h2 style="color: #66fcf1;">Career Stats</h2>
+      <button class="action-btn" onclick="toggleModal('stats-modal')">X</button>
+    </div>
+    <div class="grid-container">
+      <div class="card"><h3>PvP Wins</h3><h2 id="stat-wins" style="color:#66fcf1; margin-top:10px;">0</h2></div>
+      <div class="card"><h3>Bosses Slayer</h3><h2 id="stat-bosses" style="color:#ffd700; margin-top:10px;">0</h2></div>
+      <div class="card"><h3>Total Kills</h3><h2 id="stat-kills" style="color:#ff0055; margin-top:10px;">0</h2></div>
+      <div class="card"><h3>Chests Claimed</h3><h2 id="stat-chests" style="color:#b197fc; margin-top:10px;">0</h2></div>
+    </div>
+  </div>
+
+  <div id="achieve-modal" class="modal hidden">
+    <div class="modal-header">
+      <h2 style="color: #66fcf1;">Trophy Room</h2>
+      <button class="action-btn" onclick="toggleModal('achieve-modal')">X</button>
+    </div>
+    <div id="achieve-container" class="grid-container"></div>
+  </div>
+
+  <div id="quests-modal" class="modal hidden">
+    <div class="modal-header">
+      <h2 style="color: #66fcf1;">Goals & Rewards</h2>
+      <button class="action-btn" onclick="toggleModal('quests-modal')">X</button>
+    </div>
+    <div id="quests-container"></div>
   </div>
 
   <div id="settings-modal" class="modal hidden">
     <div class="modal-header">
-      <h2>Settings</h2>
+      <h2 style="color: #66fcf1;">Settings</h2>
       <button class="action-btn" onclick="toggleModal('settings-modal')">X</button>
     </div>
     <div style="margin: 20px 0;">
       <label for="volume-slider">Music Volume: </label>
       <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="setVolume(this.value)">
     </div>
-  </div>
-
-  <div id="shop-modal" class="modal hidden">
-    <div class="modal-header">
-      <h2>Item Shop</h2>
-      <button class="action-btn" onclick="toggleModal('shop-modal')">X</button>
-    </div>
-    
-    <h3 class="shop-section-title">Bundles (5 Exclusive Packs)</h3>
-    <div id="bundles-container" class="shop-grid"></div>
-
-    <h3 class="shop-section-title">Skins</h3>
-    <div id="skins-container" class="shop-grid"></div>
+    <button class="action-btn" style="background: #e63946; color: white;" onclick="resetData()">Reset Progress</button>
   </div>
 
   <script>
-    // Data Structures
+    // Mega Databases
     const bundles = [
-      { id: 'b1', name: 'Cyberware Pack', price: 1500 },
-      { id: 'b2', name: 'Shadow Ninja Set', price: 2000 },
-      { id: 'b3', name: 'Neon Overlord Bundle', price: 2500 },
-      { id: 'b4', name: 'Wasteland Raider Kit', price: 1800 },
-      { id: 'b5', name: 'Galactic Empire Pack', price: 3000 }
+      { id: 'b1', name: 'Cyberware Pack', price: 1500, rarity: 'legendary' },
+      { id: 'b2', name: 'Shadow Ninja Set', price: 2000, rarity: 'legendary' },
+      { id: 'b3', name: 'Neon Overlord Pack', price: 2500, rarity: 'legendary' }
     ];
 
     const skins = [
-      { id: 's1', name: 'Tuff Renegade', price: 500 },
-      { id: 's2', name: 'Phantom Striker', price: 600 },
-      { id: 's3', name: 'Vortex Assassin', price: 750 },
-      { id: 's4', name: 'Crimson Spectre', price: 800 },
-      { id: 's5', name: 'Mecha Titan', price: 1000 },
-      { id: 's6', name: 'Solar Sentinel', price: 500 },
-      { id: 's7', name: 'Void Walker', price: 850 },
-      { id: 's8', name: 'Glitch Marauder', price: 900 },
-      { id: 's9', name: 'Cyber Samurai', price: 1100 },
-      { id: 's10', name: 'Frost Vanguard', price: 650 }
+      { id: 's1', name: 'Tuff Renegade', price: 500, rarity: 'rare', color: '#66fcf1' },
+      { id: 's2', name: 'Phantom Striker', price: 600, rarity: 'rare', color: '#ff0055' },
+      { id: 's3', name: 'Vortex Assassin', price: 750, rarity: 'epic', color: '#b197fc' },
+      { id: 's4', name: 'Mecha Titan', price: 1000, rarity: 'legendary', color: '#ffd700' }
     ];
 
+    const weapons = [
+      { id: 'w1', name: 'Default Saber', price: 0, rarity: 'rare', dmg: 15 },
+      { id: 'w2', name: 'Plasma Rifle', price: 800, rarity: 'epic', dmg: 25 },
+      { id: 'w3', name: 'Cyber Blade', price: 1200, rarity: 'legendary', dmg: 35 },
+      { id: 'w4', name: 'Hyper Cannon', price: 2000, rarity: 'legendary', dmg: 50 }
+    ];
+
+    const pets = [
+      { id: 'p1', name: 'Cyber Drone', price: 1000, rarity: 'epic', color: '#66fcf1', dmg: 4 },
+      { id: 'p2', name: 'Phoenix Flame', price: 1800, rarity: 'legendary', color: '#ff4d4d', dmg: 8 },
+      { id: 'p3', name: 'Void Orb', price: 2500, rarity: 'legendary', color: '#b197fc', dmg: 12 }
+    ];
+
+    const quests = [
+      { id: 'q1', title: 'Play 1 Match', rewardType: 'coins', rewardVal: 300 },
+      { id: 'q2', title: 'Win a PvP Round', rewardType: 'chest', rewardVal: 'Gold Chest' },
+      { id: 'q3', title: 'Defeat a Mega Boss', rewardType: 'chest', rewardVal: 'Boss Chest' }
+    ];
+
+    const achievements = [
+      { id: 'a1', title: 'First Steps', desc: 'Select any mode.' },
+      { id: 'a2', title: 'Big Spender', desc: 'Buy an item from shop.' },
+      { id: 'a3', title: 'PvP Gladiator', desc: 'Win a PvP Arena battle.' },
+      { id: 'a4', title: 'Boss Slayer', desc: 'Defeat the Mega Boss.' }
+    ];
+
+    // State
+    let playerData = JSON.parse(localStorage.getItem('tuff_game_v8_data')) || {
+      coins: 5000,
+      level: 1,
+      xp: 0,
+      skillPoints: 0,
+      skills: { atk: 0, hp: 0, spd: 0 },
+      inventory: ['s1', 'w1'],
+      equippedSkin: 'Tuff Renegade',
+      equippedColor: '#66fcf1',
+      equippedWeapon: 'Default Saber',
+      weaponDmg: 15,
+      equippedPet: null,
+      petDmg: 0,
+      petColor: '#fff',
+      selectedMode: 'PvP Arena',
+      completedQuests: [],
+      unlockedAchieve: [],
+      stats: { wins: 0, bosses: 0, kills: 0, chests: 0 }
+    };
+
+    let activeShopTab = 'skins';
     const audio = document.getElementById('bg-music');
 
-    // Display Start button when page assets complete loading
     window.addEventListener('load', () => {
-      document.querySelector('.spinner').style.display = 'none';
-      document.getElementById('start-btn').style.display = 'block';
+      let progress = 0;
+      const fill = document.getElementById('loader-fill');
+      const text = document.getElementById('loader-text');
+      const startBtn = document.getElementById('start-btn');
+
+      const interval = setInterval(() => {
+        progress += 10;
+        fill.style.width = `${progress}%`;
+        text.innerText = `${progress}%`;
+        if (progress >= 100) {
+          clearInterval(interval);
+          text.style.display = 'none';
+          document.querySelector('.loader-box').style.display = 'none';
+          startBtn.style.display = 'block';
+        }
+      }, 60);
+
+      updateUI();
     });
 
-    // Start background music & reveal UI
     function enterGame() {
       document.getElementById('loading-screen').style.display = 'none';
       audio.volume = 0.5;
-      audio.play().catch(err => console.log("Audio play blocked by browser:", err));
+      audio.play().catch(err => console.log("Audio waiting:", err));
+      openMainMenu();
       renderShop();
+      renderQuests();
+      renderAchievements();
+      initCanvasGame();
     }
 
-    // Audio Control
-    function setVolume(val) {
-      audio.volume = val;
+    function openMainMenu() { document.getElementById('main-menu').classList.remove('hidden'); }
+    function openGameHub() { document.getElementById('main-menu').classList.add('hidden'); }
+    function setVolume(val) { audio.volume = val; }
+    function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+
+    function saveProgress() {
+      localStorage.setItem('tuff_game_v8_data', JSON.stringify(playerData));
+      updateUI();
     }
 
-    // UI Controls
-    function toggleModal(id) {
-      document.getElementById(id).classList.toggle('hidden');
+    function updateUI() {
+      document.getElementById('coin-count').innerText = playerData.coins;
+      document.getElementById('level-display').innerText = playerData.level;
+      document.getElementById('player-skin-name').innerText = playerData.equippedSkin;
+      document.getElementById('player-pet-name').innerText = playerData.equippedPet || 'None';
+
+      document.getElementById('skill-points-display').innerText = playerData.skillPoints;
+      document.getElementById('skill-atk-lvl').innerText = playerData.skills.atk;
+      document.getElementById('skill-hp-lvl').innerText = playerData.skills.hp;
+      document.getElementById('skill-spd-lvl').innerText = playerData.skills.spd;
+
+      document.getElementById('stat-wins').innerText = playerData.stats.wins;
+      document.getElementById('stat-bosses').innerText = playerData.stats.bosses;
+      document.getElementById('stat-kills').innerText = playerData.stats.kills;
+      document.getElementById('stat-chests').innerText = playerData.stats.chests;
+
+      const xpNeeded = playerData.level * 100;
+      const xpPercentage = (playerData.xp / xpNeeded) * 100;
+      document.getElementById('xp-fill').style.width = `${xpPercentage}%`;
     }
 
-    // Render Shop Data dynamically
-    function renderShop() {
-      const bContainer = document.getElementById('bundles-container');
-      const sContainer = document.getElementById('skins-container');
-      
-      bContainer.innerHTML = bundles.map(b => `
-        <div class="shop-card bundle">
-          <h4>${b.name}</h4>
-          <p>${b.price} Coins</p>
-          <button class="action-btn" onclick="buyItem('${b.name}', ${b.price})">Buy</button>
-        </div>
-      `).join('');
-
-      sContainer.innerHTML = skins.map(s => `
-        <div class="shop-card">
-          <h4>${s.name}</h4>
-          <p>${s.price} Coins</p>
-          <button class="action-btn" onclick="buyItem('${s.name}', ${s.price})">Buy</button>
-        </div>
-      `).join('');
+    function upgradeSkill(type) {
+      if (playerData.skillPoints > 0) {
+        playerData.skillPoints--;
+        playerData.skills[type]++;
+        saveProgress();
+      } else alert("Not enough Skill Points! Level up to earn more.");
     }
 
-    // Purchase Logic
-    function buyItem(name, price) {
-      let coins = parseInt(document.getElementById('coin-count').innerText);
-      if (coins >= price) {
-        coins -= price;
-        document.getElementById('coin-count').innerText = coins;
-        alert(`Successfully purchased ${name}!`);
-      } else {
-        alert("Not enough coins!");
+    function unlockAchievement(id) {
+      if (!playerData.unlockedAchieve.includes(id)) {
+        playerData.unlockedAchieve.push(id);
+        const ach = achievements.find(a => a.id === id);
+        alert(`🏆 Achievement Unlocked: ${ach.title}!`);
+        saveProgress();
+        renderAchievements();
       }
     }
-  </script>
-</body>
-</html>
+
+    function selectMode(modeName) {
+      playerData.selectedMode = modeName;
+      document.getElementById('enemy-title').innerText = modeName === 'Boss Hunt' ? 'MEGA BOSS' : 'PvP Opponent';
+      unlockAchievement('a1');
+      saveProgress();
+      toggleModal('singleplayer-modal');
+      resetCombat();
+    }
+
+    // Engine Core
+    let playerX = 100, playerY = 150;
+    let petX = 80, petY = 150;
+    let enemyX = 500, enemyY = 150, enemySize = 30;
+    let playerHealth = 100, maxPlayerHp = 100, enemyHealth = 100, maxEnemyHealth = 100;
+    let abilityCooldown = false, ultCooldown = false;
+    let floatingTexts = [];
+    const keys = {};
+
+    window.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      if (e.code === 'Space') attackEnemy();
+      if (e.key.toLowerCase() === 'e') triggerSpecialAbility();
+      if (e.key.toLowerCase() === 'q') triggerUltimate();
+    });
+    window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+    function resetCombat() {
+      maxPlayerHp = 100 + (playerData.skills.hp * 20);
+      playerHealth = maxPlayerHp;
+      maxEnemyHealth = playerData.selectedMode === 'Boss Hunt' ? 350 : 100;
+      enemyHealth = maxEnemyHealth;
+      enemySize = playerData.selectedMode === 'Boss Hunt' ? 55 : 30;
+      playerX = 100; playerY = 150;
+      enemyX = 500; enemyY = 150;
+      document.getElementById('player-health-fill').style.width = '100%';
+      document.getElementById('enemy-health-fill').style.width = '100%';
+    }
+
+    function attackEnemy() {
+      if (playerData.selectedMode === 'Solo Freeplay') return;
+      if (Math.hypot(playerX - enemyX, playerY - enemyY) < enemySize + 30) {
+        const damage = playerData.weaponDmg + (playerData.skills.atk * 5);
+        enemyHealth = Math.max(0, enemyHealth - damage);
+        floatingTexts.push({ text: `-${damage}`, x: enemyX, y: enemyY - 10, alpha: 1, color: '#ffd700' });
+        document.getElementById('enemy-health-fill').style.width = `${(enemyHealth / maxEnemyHealth) * 100}%`;
+        if (enemyHealth <= 0) handleEnemyDefeat();
+      }
+    }
+
+    function triggerSpecialAbility() {
+      if (abilityCooldown || playerData.selectedMode === 'Solo Freeplay') return;
+      abilityCooldown = true;
+      document.getElementById('cd-timer').innerText = '5s';
+
+      const damage = (playerData.weaponDmg + (playerData.skills.atk * 5)) * 2;
+      enemyHealth = Math.max(0, enemyHealth - damage);
+      floatingTexts.push({ text: `💥 BLAST -${damage}`, x: enemyX, y: enemyY - 20, alpha: 1, color: '#ff0055' });
+      document.getElementById('enemy-health-fill').style.width = `${(enemyHealth / maxEnemyHealth) * 100}%`;
+
+      if (enemyHealth <= 0) handleEnemyDefeat();
+
+      let cd = 5;
+      const timer = setInterval(() => {
+        cd--;
+        document.getElementById('cd-timer').innerText = `${cd}s`;
+        if (cd <= 0) {
+          clearInterval(timer);
+          abilityCooldown = false;
+          document.getElementById('cd-timer').innerText = 'Ready';
+        }
+      }, 1000);
+    }
+
+    function triggerUltimate() {
+      if (ultCooldown || playerData.selectedMode === 'Solo Freeplay') return;
+      ultCooldown = true;
+      document.getElementById('ult-cd-timer').innerText = '10s';
+
+      const damage = (playerData.weaponDmg + (playerData.skills.atk * 5)) * 3.5;
+      enemyHealth = Math.max(0, enemyHealth - damage);
+      floatingTexts.push({ text: `⚡ ULTIMATE BURST -${damage}`, x: enemyX, y: enemyY - 30, alpha: 1, color: '#66fcf1' });
+      document.getElementById('enemy-health-fill').style.width = `${(enemyHealth / maxEnemyHealth) * 100}%`;
+
+      if (enemyHealth <= 0) handleEnemyDefeat();
+
+      let cd = 10;
+      const timer = setInterval(() => {
+        cd--;
+        document.getElementById('ult-cd-timer').innerText = `${cd}s`;
+        if (cd <= 0) {
+          clearInterval(timer);
+          ultCooldown = false;
+          document.getElementById('ult-cd-timer').innerText = 'Ready';
+        }
+      }, 1000);
+    }
+
+    function handleEnemyDefeat() {
+      if (playerData.selectedMode === 'Boss Hunt') {
+        alert("🎉 MEGA BOSS DEFEATED!");
+        playerData.stats.bosses++;
+        unlockAchievement('a4');
+      } else {
+        alert("💥 Round Victory!");
+        playerData.stats.wins++;
+        unlockAchievement('a3');
+      }
+      playerData.stats.kills++;
+      playerData.coins += 350;
+      playerData.xp += 85;
+
+      if (playerData.xp >= playerData.level * 100) {
+        playerData.xp -= playerData.level * 100;
+        playerData.level++;
+        playerData.skillPoints++;
+        alert(`⭐ LEVEL UP! You reached Level ${playerData.level} and gained 1 Skill Point!`);
+      }
+
+      saveProgress();
+      resetCombat();
+    }
+
+    function initCanvasGame() {
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      let petTimer = 0;
+
+      function gameLoop() {
+        const speed = 4
