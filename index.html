@@ -1,380 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEON BOUNCE: ULTIMATE EDITION</title>
-    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            background: #020008;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            user-select: none;
-        }
-
-        #game-container {
-            position: relative;
-            box-shadow: 0 0 50px rgba(255, 0, 127, 0.6), 0 0 100px rgba(0, 242, 254, 0.4);
-            border-radius: 16px;
-        }
-
-        canvas {
-            border: 4px solid #ff007f;
-            background: radial-gradient(circle, #100a26 0%, #050212 70%, #000000 100%);
-            border-radius: 12px;
-            display: block;
-        }
-
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(4, 1, 15, 0.95);
-            backdrop-filter: blur(8px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin: 0 0 4px 0;
-            text-transform: uppercase;
-            background: linear-gradient(45deg, #ff007f, #00f2fe, #ffe600, #7928ca);
-            background-size: 300% 300%;
-            animation: gradientShift 6s ease infinite;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 25px rgba(0, 242, 254, 0.8);
-            letter-spacing: 2px;
-            text-align: center;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        p {
-            color: #a0a0c0;
-            font-size: 11px;
-            margin: 0 0 8px 0;
-            text-align: center;
-        }
-
-        .currency-display {
-            color: #ffe600;
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 8px;
-            text-shadow: 0 0 10px rgba(255, 230, 0, 0.6);
-        }
-
-        .skin-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            margin: 6px 0 10px 0;
-            width: 90%;
-            max-height: 180px;
-            overflow-y: auto;
-        }
-
-        .skin-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 6px 2px;
-            border: 2px solid #221545;
-            background: #0d061f;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .skin-card:hover {
-            transform: translateY(-2px);
-            border-color: #00f2fe;
-        }
-
-        .skin-card.equipped {
-            border-color: #ffe600;
-            box-shadow: 0 0 12px #ffe600;
-            background: #1a0f3d;
-        }
-
-        .skin-name {
-            font-size: 9px;
-            font-weight: bold;
-            text-transform: uppercase;
-            color: #fff;
-        }
-
-        .skin-status {
-            font-size: 8px;
-            margin-top: 2px;
-            color: #00f2fe;
-        }
-
-        .mode-container {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            width: 85%;
-        }
-
-        .btn {
-            background: linear-gradient(45deg, #ff007f, #7928ca);
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            font-size: 11px;
-            font-weight: bold;
-            border-radius: 20px;
-            cursor: pointer;
-            box-shadow: 0 0 12px rgba(255, 0, 127, 0.4);
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            text-align: center;
-        }
-
-        .btn:hover {
-            transform: scale(1.03);
-            box-shadow: 0 0 18px rgba(0, 242, 254, 0.8);
-            background: linear-gradient(45deg, #00f2fe, #ffe600);
-            color: #060112;
-        }
-
-        .input-box {
-            padding: 8px;
-            font-size: 12px;
-            border-radius: 12px;
-            border: 2px solid #00f2fe;
-            background: #110826;
-            color: #ffe600;
-            text-align: center;
-            font-weight: bold;
-            letter-spacing: 1px;
-            width: 85%;
-            margin-bottom: 8px;
-            outline: none;
-        }
-
-        .lobby-list {
-            width: 85%;
-            height: 100px;
-            background: #090417;
-            border: 2px solid #331c63;
-            border-radius: 10px;
-            overflow-y: auto;
-            margin-bottom: 8px;
-            padding: 6px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .lobby-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #160c33;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            border: 1px solid #00f2fe;
-        }
-
-        .lobby-item button {
-            background: #00ff66;
-            color: #000;
-            border: none;
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 10px;
-        }
-
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 80%;
-            margin: 6px 0;
-            font-size: 12px;
-            font-weight: bold;
-            color: #00f2fe;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(0, 242, 254, 0.2);
-            border-top: 4px solid #00f2fe;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .progress-bar-bg {
-            width: 70%;
-            height: 8px;
-            background: #110826;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid #7928ca;
-        }
-
-        .progress-bar-fill {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #ff007f, #00f2fe);
-            transition: width 0.1s ease;
-        }
-
-        #ui {
-            position: absolute;
-            top: 10px;
-            left: 15px;
-            right: 15px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            font-weight: bold;
-            color: #00f2fe;
-            text-shadow: 0 0 8px rgba(0, 242, 254, 0.8);
-            pointer-events: none;
-        }
-
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-
-    <div id="game-container">
-        <canvas id="gameCanvas" width="480" height="580"></canvas>
-
-        <div id="ui" class="hidden">
-            <div>SCORE: <span id="score-ui">0</span> | COINS: <span id="coins-ui">0</span></div>
-            <div>MODE: <span id="mode-ui" style="color:#ff007f;">CLASSIC</span></div>
-        </div>
-
-        <!-- LOADING SCREEN -->
-        <div id="loading-screen" class="screen hidden">
-            <h1>LOADING MATCH</h1>
-            <div class="spinner"></div>
-            <div class="progress-bar-bg">
-                <div id="loading-bar" class="progress-bar-fill"></div>
-            </div>
-            <p id="loading-text" style="margin-top: 10px; color: #ffe600;">INITIALIZING HYPER DRIVE...</p>
-        </div>
-
-        <!-- MAIN MENU -->
-        <div id="title-screen" class="screen">
-            <h1>NEON BOUNCE</h1>
-            <div class="currency-display">💎 <span id="menu-coins">0</span> COINS</div>
-
-            <div class="mode-container">
-                <button class="btn" id="btn-sp-start">🎮 CLASSIC BRICKS</button>
-                <button class="btn" id="btn-survival-start" style="background: linear-gradient(45deg, #ff0055, #ff5500);">🔥 SURVIVAL MODE</button>
-                <button class="btn" id="btn-speed-start" style="background: linear-gradient(45deg, #e11d48, #fbbf24);">⚡ SPEED DEMON</button>
-                <button class="btn" id="btn-boss-start" style="background: linear-gradient(45deg, #9333ea, #4f46e5);">👾 BOSS BATTLE</button>
-                <button class="btn" id="btn-pvp-menu" style="background: linear-gradient(45deg, #00f2fe, #4facfe);">🌐 PVP LOBBIES</button>
-                <button class="btn" id="btn-shop-menu" style="background: linear-gradient(45deg, #ffe600, #ff007f); color: #000;">🛒 PADDLE SHOP</button>
-                <button class="btn" id="btn-settings-menu" style="background: #221545;">⚙️ SETTINGS</button>
-            </div>
-        </div>
-
-        <!-- SHOP SCREEN -->
-        <div id="shop-screen" class="screen hidden">
-            <h1>PADDLE SHOP</h1>
-            <div class="currency-display">AVAILABLE COINS: 💎 <span id="shop-coins">0</span></div>
-
-            <div class="skin-grid" id="shop-grid"></div>
-
-            <button class="btn" id="btn-back-shop" style="margin-top:10px; width:60%; background: #333;">BACK TO MENU</button>
-        </div>
-
-        <!-- PVP SCREEN -->
-        <div id="pvp-screen" class="screen hidden">
-            <h1>PVP LOBBY ROOMS</h1>
-            
-            <input type="text" id="create-lobby-name" class="input-box" placeholder="ENTER YOUR LOBBY NAME..." maxlength="15">
-            <button class="btn" id="btn-create-lobby" style="width:85%; margin-bottom:8px;">🔑 CREATE NEW LOBBY</button>
-            
-            <p style="color:#00f2fe; font-weight:bold; margin-bottom:4px;">OPEN LOBBIES:</p>
-            <div id="lobby-list-container" class="lobby-list">
-                <div style="text-align:center; color:#666; font-size:10px; margin-top:35px;">Create a room or enter a Lobby ID below</div>
-            </div>
-
-            <input type="text" id="direct-code-input" class="input-box" placeholder="OR ENTER LOBBY ID..." maxlength="6">
-            <button class="btn" id="btn-join-direct" style="width:85%; background: linear-gradient(45deg, #00ff66, #00f2fe);">⚡ JOIN BY ID</button>
-            
-            <p id="lobby-status" style="margin-top:6px; color:#ffe600; font-weight:bold;"></p>
-            <button class="btn" id="btn-back-pvp" style="margin-top:4px; background: #333;">BACK</button>
-        </div>
-
-        <!-- SETTINGS SCREEN -->
-        <div id="settings-screen" class="screen hidden">
-            <h1>SETTINGS</h1>
-            
-            <div class="setting-row">
-                <span>SOUND EFFECTS</span>
-                <input type="checkbox" id="setting-sfx" checked>
-            </div>
-            
-            <div class="setting-row">
-                <span>SYNTH MUSIC</span>
-                <input type="checkbox" id="setting-music" checked>
-            </div>
-
-            <div class="setting-row">
-                <span>SCREEN SHAKE</span>
-                <input type="checkbox" id="setting-shake" checked>
-            </div>
-
-            <button class="btn" id="btn-back-settings" style="margin-top:20px; width:60%; background: #333;">SAVE & BACK</button>
-        </div>
-
-        <!-- PAUSE SCREEN -->
-        <div id="pause-screen" class="screen hidden">
-            <h1>GAME PAUSED</h1>
-            <p>PRESS 'P' OR 'ESC' TO UNPAUSE</p>
-            <button class="btn" id="btn-resume" style="margin-bottom: 10px;">RESUME</button>
-            <button class="btn" id="btn-pause-quit" style="background: #333;">QUIT TO MENU</button>
-        </div>
-
-        <!-- GAME OVER SCREEN -->
-        <div id="game-over-screen" class="screen hidden">
-            <h1 id="over-title">GAME OVER</h1>
-            <p id="winner-text">MATCH FINISHED</p>
-            <button class="btn" id="btn-quit-menu">MAIN MENU</button>
-        </div>
-    </div>
-
-    <script>
+ <script>
         document.addEventListener("DOMContentLoaded", () => {
             const canvas = document.getElementById("gameCanvas");
             const ctx = canvas.getContext("2d");
@@ -399,8 +23,10 @@
             const loadingText = document.getElementById("loading-text");
             const shopGrid = document.getElementById("shop-grid");
 
-            // Game State & Economy
-            let coins = 0;
+            // Game State, Health & Economy
+            let coins = 100;
+            let playerHp = 3;
+            let maxHp = 3;
             let settings = { sfx: true, music: true, shake: true };
 
             let gameRunning = false;
@@ -456,16 +82,38 @@
                 if (musicInterval) clearInterval(musicInterval);
             }
 
-            // Skin & Shop Database
-            const skins = {
-                cyber: { name: "Cyber", color: "#00f2fe", glow: "#ff007f", style: "neon", cost: 0, unlocked: true },
-                fire: { name: "Fire", color: "#ff3300", glow: "#ffcc00", style: "fire", cost: 50, unlocked: false },
-                gold: { name: "Gold", color: "#ffe600", glow: "#ffffff", style: "metallic", cost: 100, unlocked: false },
-                matrix: { name: "Matrix", color: "#00ff66", glow: "#005511", style: "grid", cost: 150, unlocked: false },
-                void: { name: "Void", color: "#a855f7", glow: "#ec4899", style: "void", cost: 200, unlocked: false },
-                rainbow: { name: "Prism", color: "#ffffff", glow: "#00f2fe", style: "rainbow", cost: 300, unlocked: false },
-                plasma: { name: "Plasma", color: "#ff007f", glow: "#7928ca", style: "pulse", cost: 400, unlocked: false },
-                ice: { name: "Glacier", color: "#38bdf8", glow: "#e0f2fe", style: "frost", cost: 500, unlocked: false }
+            // Shop Database
+            const shopItems = {
+                cyber: { type: "skin", name: "Cyber", color: "#00f2fe", glow: "#ff007f", cost: 0, unlocked: true },
+                fire: { type: "skin", name: "Fire", color: "#ff3300", glow: "#ffcc00", cost: 50, unlocked: false },
+                gold: { type: "skin", name: "Gold", color: "#ffe600", glow: "#ffffff", cost: 100, unlocked: false },
+                neon_overlord: { 
+                    type: "bundle", 
+                    name: "⚡ NEON BUNDLE", 
+                    color: "#ff007f", 
+                    glow: "#00f2fe", 
+                    cost: 200, 
+                    unlocked: false, 
+                    desc: "Neon Paddle + Cyan Trail" 
+                },
+                dragon_lord: { 
+                    type: "bundle", 
+                    name: "🔥 DRAGON BUNDLE", 
+                    color: "#ff5500", 
+                    glow: "#ffe600", 
+                    cost: 350, 
+                    unlocked: false, 
+                    desc: "Inferno Paddle + Fire Particles" 
+                },
+                void_walker: { 
+                    type: "bundle", 
+                    name: "🌌 VOID BUNDLE", 
+                    color: "#a855f7", 
+                    glow: "#ec4899", 
+                    cost: 500, 
+                    unlocked: false, 
+                    desc: "Quantum Paddle + Void Trail" 
+                }
             };
             let equippedSkin = "cyber";
 
@@ -477,28 +125,29 @@
 
             function renderShop() {
                 shopGrid.innerHTML = "";
-                Object.keys(skins).forEach(key => {
-                    const skin = skins[key];
+                Object.keys(shopItems).forEach(key => {
+                    const item = shopItems[key];
                     const card = document.createElement("div");
                     card.className = `skin-card ${equippedSkin === key ? 'equipped' : ''}`;
                     
                     let statusText = "";
                     if (equippedSkin === key) statusText = "EQUIPPED";
-                    else if (skin.unlocked) statusText = "OWNED";
-                    else statusText = `💎 ${skin.cost}`;
+                    else if (item.unlocked) statusText = "OWNED";
+                    else statusText = `💎 ${item.cost}`;
 
                     card.innerHTML = `
-                        <div class="skin-name" style="color:${skin.color};">${skin.name}</div>
+                        <div class="skin-name" style="color:${item.color};">${item.name}</div>
+                        ${item.type === 'bundle' ? `<div style="font-size:7px; color:#a0a0c0; margin-top:1px;">${item.desc}</div>` : ''}
                         <div class="skin-status">${statusText}</div>
                     `;
 
                     card.addEventListener("click", () => {
-                        if (skin.unlocked) {
+                        if (item.unlocked) {
                             equippedSkin = key;
                             renderShop();
-                        } else if (coins >= skin.cost) {
-                            coins -= skin.cost;
-                            skin.unlocked = true;
+                        } else if (coins >= item.cost) {
+                            coins -= item.cost;
+                            item.unlocked = true;
                             equippedSkin = key;
                             updateCurrencyDisplays();
                             renderShop();
@@ -527,7 +176,7 @@
             window.addEventListener("keyup", (e) => keys[e.key] = false);
 
             canvas.addEventListener("mousemove", (e) => {
-                if (!gameRunning || isPaused) return;
+                if (!gameRunning || isPaused || currentMode === "LOCAL 2P") return;
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = (e.clientX - rect.left) - p1Paddle.w / 2;
                 
@@ -647,6 +296,12 @@
             document.getElementById("btn-speed-start").addEventListener("click", () => triggerLoadingSequence("SPEED DEMON"));
             document.getElementById("btn-boss-start").addEventListener("click", () => triggerLoadingSequence("BOSS BATTLE"));
 
+            // Dynamic setup for Local 2P button if present in HTML, else fallback
+            const btnLocal2P = document.getElementById("btn-local2p-start");
+            if (btnLocal2P) {
+                btnLocal2P.addEventListener("click", () => triggerLoadingSequence("LOCAL 2P"));
+            }
+
             document.getElementById("btn-shop-menu").addEventListener("click", () => {
                 renderShop(); updateCurrencyDisplays();
                 titleScreen.classList.add("hidden"); shopScreen.classList.remove("hidden");
@@ -729,12 +384,13 @@
             function startGame(mode) {
                 gameRunning = true; isPaused = false; currentMode = mode;
                 score = 0; survivalTimer = 0; screenShake = 0;
+                playerHp = maxHp;
                 particles = []; trail = [];
                 
                 updateCurrencyDisplays();
                 scoreUI.textContent = "0"; modeUI.textContent = mode;
                 
-                p1Paddle.color = skins[equippedSkin].color;
+                p1Paddle.color = shopItems[equippedSkin].color;
 
                 if (mode === "SPEED DEMON") balls = [createBall(-7, 1.8)];
                 else balls = [createBall()];
@@ -779,206 +435,273 @@
                     if (boss.x <= 0 || boss.x + boss.w >= canvas.width) boss.vx *= -1;
                 }
 
-                if (currentMode !== "PVP" || isHost) {
-                    if (keys["ArrowLeft"] || keys["a"] || keys["A"]) p1Paddle.x -= 6 * ts;
-                    if (keys["ArrowRight"] || keys["d"] || keys["D"]) p1Paddle.x += 6 * ts;
+                // --- CONTROLS IMPLEMENTATION ---
+                if (currentMode === "LOCAL 2P") {
+                    // Player 1 (Bottom): Arrow Keys
+                    if (keys["ArrowLeft"]) p1Paddle.x -= 6 * ts;
+                    if (keys["ArrowRight"]) p1Paddle.x += 6 * ts;
+
+                    // Player 2 (Top): WASD Keys
+                    if (keys["a"] || keys["A"]) p2Paddle.x -= 6 * ts;
+                    if (keys["d"] || keys["D"]) p2Paddle.x += 6 * ts;
+
+                    clampPaddle(p1Paddle);
+                    clampPaddle(p2Paddle);
+                } else if (currentMode !== "PVP" || isHost) {
+                    if (keys["ArrowLeft"]) p1Paddle.x -= 6 * ts;
+                    if (keys["ArrowRight"]) p1Paddle.x += 6 * ts;
                     clampPaddle(p1Paddle);
                 }
 
-                if (currentMode !== "PVP" && currentMode !== "BOSS BATTLE") {
+                if (currentMode !== "PVP" && currentMode !== "BOSS BATTLE" && currentMode !== "LOCAL 2P") {
                     p2Paddle.x += (balls[0].x - (p2Paddle.x + p2Paddle.w / 2)) * 0.08 * ts;
                     clampPaddle(p2Paddle);
                 } else if (currentMode === "PVP" && !isHost) {
-                    if (keys["ArrowLeft"] || keys["a"] || keys["A"]) p2Paddle.x -= 6 * ts;
-                    if (keys["ArrowRight"] || keys["d"] || keys["D"]) p2Paddle.x += 6 * ts;
+                    if (keys["ArrowLeft"]) p2Paddle.x -= 6 * ts;
+                    if (keys["ArrowRight"]) p2Paddle.x += 6 * ts;
                     clampPaddle(p2Paddle);
                 }
 
                 if (currentMode !== "PVP" || isHost) {
                     balls.forEach(b => {
                         b.x += b.vx * ts; b.y += b.vy * ts;
-
                         trail.push({ x: b.x, y: b.y, life: 1.0 });
 
-                        if (b.x - b.radius < 0 || b.x + b.radius > canvas.width) {
+                        // Wall collisions
+                        if (b.x - b.radius <= 0) {
+                            b.x = b.radius;
                             b.vx *= -1;
                             playSynthSound(300, 0.05);
-                            createParticles(b.x, b.y, "#00f2fe", 6);
+                        } else if (b.x + b.radius >= canvas.width) {
+                            b.x = canvas.width - b.radius;
+                            b.vx *= -1;
+                            playSynthSound(300, 0.05);
                         }
 
-                        if (currentMode !== "BOSS BATTLE") {
-                            if (b.y - b.radius <= p2Paddle.y + p2Paddle.h && b.y + b.radius >= p2Paddle.y &&
-                                b.x >= p2Paddle.x && b.x <= p2Paddle.x + p2Paddle.w) {
-                                b.vy = Math.abs(b.vy);
-                                playSynthSound(450, 0.08);
-                                createParticles(b.x, b.y, skins[equippedSkin].glow, 10);
-                            }
-                        } else {
-                            if (b.y - b.radius <= boss.y + boss.h && b.y + b.radius >= boss.y &&
-                                b.x >= boss.x && b.x <= boss.x + boss.w) {
-                                b.vy = Math.abs(b.vy);
-                                boss.hp -= 5;
-                                score += 20;
-                                coins += 2;
-                                updateCurrencyDisplays();
-                                scoreUI.textContent = score;
-                                if (settings.shake) screenShake = 6;
-                                playSynthSound(150, 0.15, "sawtooth");
-                                createParticles(b.x, b.y, "#ff0055", 12);
+                        // Top boundary collision (Non-PVP & Non-Local2P modes)
+                        if (currentMode !== "PVP" && currentMode !== "LOCAL 2P" && b.y - b.radius <= 0) {
+                            b.y = b.radius;
+                            b.vy *= -1;
+                            playSynthSound(350, 0.05);
+                        } else if (currentMode === "LOCAL 2P" && b.y - b.radius <= 0) {
+                            // Point scored by P1 in Local 2P mode
+                            b.out = true;
+                            score += 50;
+                            scoreUI.textContent = score;
+                            playSynthSound(600, 0.2, "sine");
+                            setTimeout(() => { if (gameRunning && balls.length === 0) balls.push(createBall(4)); }, 500);
+                        }
+
+                        // Bottom boundary
+                        if (b.y + b.radius >= canvas.height) {
+                            b.out = true;
+                            playerHp--;
+                            if (settings.shake) screenShake = 12;
+                            playSynthSound(120, 0.3, "sawtooth");
+
+                            if (playerHp > 0) {
+                                setTimeout(() => {
+                                    if (gameRunning && balls.length === 0) balls.push(createBall());
+                                }, 500);
                             }
                         }
 
+                        // Paddle 1 Collision
                         if (b.y + b.radius >= p1Paddle.y && b.y - b.radius <= p1Paddle.y + p1Paddle.h &&
-                            b.x >= p1Paddle.x && b.x <= p1Paddle.x + p1Paddle.w) {
-                            b.vy = -Math.abs(b.vy);
-                            playSynthSound(450, 0.08);
-                            createParticles(b.x, b.y, skins[equippedSkin].glow, 10);
+                            b.x >= p1Paddle.x && b.x <= p1Paddle.x + p1Paddle.w && b.vy > 0) {
+                            b.vy *= -1.05;
+                            let hitPoint = (b.x - (p1Paddle.x + p1Paddle.w / 2)) / (p1Paddle.w / 2);
+                            b.vx = hitPoint * 7;
+                            createParticles(b.x, b.y, p1Paddle.color, 12);
+                            playSynthSound(440, 0.1, "square");
+                            score += 10;
+                            coins += 1;
+                            updateCurrencyDisplays();
+                            scoreUI.textContent = score;
                         }
 
-                        bricks.forEach(br => {
-                            if (!br.active) return;
-                            if (b.x + b.radius > br.x && b.x - b.radius < br.x + br.w &&
-                                b.y + b.radius > br.y && b.y - b.radius < br.y + br.h) {
-                                br.active = false; b.vy *= -1; 
-                                score += 10;
-                                coins += 1;
-                                updateCurrencyDisplays();
-                                scoreUI.textContent = score;
-                                if (settings.shake) screenShake = 4;
-                                playSynthSound(800, 0.1, "square");
-                                createParticles(br.x + br.w / 2, br.y + br.h / 2, br.color, 14);
-                            }
-                        });
+                        // Paddle 2 Collision
+                        if (b.y - b.radius <= p2Paddle.y + p2Paddle.h && b.y + b.radius >= p2Paddle.y &&
+                            b.x >= p2Paddle.x && b.x <= p2Paddle.x + p2Paddle.w && b.vy < 0) {
+                            b.vy *= -1.05;
+                            let hitPoint = (b.x - (p2Paddle.x + p2Paddle.w / 2)) / (p2Paddle.w / 2);
+                            b.vx = hitPoint * 7;
+                            createParticles(b.x, b.y, p2Paddle.color, 12);
+                            playSynthSound(400, 0.1, "square");
+                        }
 
-                        if (b.y > canvas.height || b.y < 0) {
-                            b.x = canvas.width / 2; b.y = canvas.height / 2;
+                        // Boss Collision
+                        if (currentMode === "BOSS BATTLE") {
+                            if (b.y - b.radius <= boss.y + boss.h && b.y + b.radius >= boss.y &&
+                                b.x >= boss.x && b.x <= boss.x + boss.w && b.vy < 0) {
+                                b.vy *= -1;
+                                boss.hp -= 5;
+                                score += 50;
+                                coins += 5;
+                                updateCurrencyDisplays();
+                                createParticles(b.x, b.y, "#ff007f", 20);
+                                playSynthSound(150, 0.2, "sawtooth");
+                                if (settings.shake) screenShake = 8;
+                                if (boss.hp <= 0) gameOver(true, "BOSS DESTROYED!");
+                            }
+                        }
+
+                        // Brick Collisions
+                        if (currentMode === "CLASSIC" || currentMode === "SPEED DEMON") {
+                            bricks.forEach(brick => {
+                                if (brick.active) {
+                                    if (b.x + b.radius > brick.x && b.x - b.radius < brick.x + brick.w &&
+                                        b.y + b.radius > brick.y && b.y - b.radius < brick.y + brick.h) {
+                                        brick.active = false;
+                                        b.vy *= -1;
+                                        score += 20;
+                                        coins += 2;
+                                        updateCurrencyDisplays();
+                                        scoreUI.textContent = score;
+                                        createParticles(b.x, b.y, brick.color, 15);
+                                        playSynthSound(520, 0.08, "triangle");
+
+                                        if (bricks.every(br => !br.active)) {
+                                            initBricks();
+                                        }
+                                    }
+                                }
+                            });
                         }
                     });
+
+                    balls = balls.filter(b => !b.out);
+
+                    if (playerHp <= 0) {
+                        gameOver(false, "GAME OVER - OUT OF HEALTH");
+                    }
                 }
 
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    const p = particles[i];
-                    p.x += p.vx; p.y += p.vy;
-                    p.life -= 0.04;
-                    if (p.life <= 0) particles.splice(i, 1);
-                }
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life -= 0.03;
+                });
+                particles = particles.filter(p => p.life > 0);
 
-                for (let i = trail.length - 1; i >= 0; i--) {
-                    trail[i].life -= 0.08;
-                    if (trail[i].life <= 0) trail.splice(i, 1);
-                }
+                trail.forEach(t => t.life -= 0.05);
+                trail = trail.filter(t => t.life > 0);
 
                 if (currentMode === "PVP") syncOnlineData();
             }
 
-            function drawPaddleSkin(p, skinKey) {
-                const skin = skins[skinKey] || skins.cyber;
-                
-                ctx.save();
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = skin.glow;
-
-                if (skin.style === "rainbow") {
-                    const gradient = ctx.createLinearGradient(p.x, p.y, p.x + p.w, p.y);
-                    gradient.addColorStop(0, "red"); gradient.addColorStop(0.2, "yellow");
-                    gradient.addColorStop(0.4, "green"); gradient.addColorStop(0.6, "cyan");
-                    gradient.addColorStop(0.8, "blue"); gradient.addColorStop(1, "magenta");
-                    ctx.fillStyle = gradient;
-                } else if (skin.style === "fire") {
-                    const gradient = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.h);
-                    gradient.addColorStop(0, "#ffe600"); gradient.addColorStop(1, "#ff0000");
-                    ctx.fillStyle = gradient;
-                } else {
-                    ctx.fillStyle = skin.color;
-                }
-
-                ctx.beginPath();
-                ctx.roundRect(p.x, p.y, p.w, p.h, 6);
-                ctx.fill();
-
-                ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
-                ctx.fillRect(p.x + 4, p.y + 2, p.w - 8, 3);
-                ctx.restore();
+            function gameOver(won, message) {
+                gameRunning = false;
+                stopBackgroundMusic();
+                document.getElementById("over-title").textContent = won ? "VICTORY!" : "GAME OVER";
+                document.getElementById("winner-text").textContent = message;
+                gameOverScreen.classList.remove("hidden");
+                ui.classList.add("hidden");
             }
 
-            function draw() {
+            function render() {
                 ctx.save();
+                
+                if (screenShake > 0) {
+                    ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+                }
+
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                if (screenShake > 0 && settings.shake) {
-                    const rx = (Math.random() - 0.5) * screenShake * 2;
-                    const ry = (Math.random() - 0.5) * screenShake * 2;
-                    ctx.translate(rx, ry);
-                }
-
-                if (!gameRunning) { ctx.restore(); return; }
-
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
-                ctx.lineWidth = 1;
-                for (let x = 0; x < canvas.width; x += 30) {
-                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-                }
-                for (let y = 0; y < canvas.height; y += 30) {
-                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-                }
-
+                // Draw Trails
                 trail.forEach(t => {
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, 6 * t.life, 0, Math.PI * 2);
                     ctx.fillStyle = `rgba(0, 242, 254, ${t.life * 0.4})`;
-                    ctx.beginPath(); ctx.arc(t.x, t.y, 6 * t.life, 0, Math.PI * 2); ctx.fill();
+                    ctx.fill();
                 });
 
+                // Draw Bricks
                 bricks.forEach(b => {
                     if (b.active) {
                         ctx.shadowBlur = 10;
                         ctx.shadowColor = b.color;
                         ctx.fillStyle = b.color;
                         ctx.fillRect(b.x, b.y, b.w, b.h);
+                        ctx.shadowBlur = 0;
                     }
                 });
 
-                drawPaddleSkin(p1Paddle, equippedSkin);
-                if (currentMode !== "BOSS BATTLE") {
-                    drawPaddleSkin(p2Paddle, "plasma");
-                } else {
-                    ctx.save();
-                    ctx.shadowBlur = 20;
-                    ctx.shadowColor = "#ff0055";
-                    ctx.fillStyle = "#ff0055";
+                // Draw Boss
+                if (currentMode === "BOSS BATTLE") {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = "#ff007f";
+                    ctx.fillStyle = "#ff007f";
                     ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
-                    
-                    ctx.fillStyle = "#333";
-                    ctx.fillRect(boss.x, boss.y - 10, boss.w, 5);
-                    ctx.fillStyle = "#00ff66";
-                    ctx.fillRect(boss.x, boss.y - 10, Math.max(0, (boss.hp / boss.maxHp)) * boss.w, 5);
-                    ctx.restore();
+
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+                    ctx.fillRect(100, 10, 280, 8);
+                    ctx.fillStyle = "#00f2fe";
+                    ctx.fillRect(100, 10, (boss.hp / boss.maxHp) * 280, 8);
+                    ctx.shadowBlur = 0;
                 }
 
+                // Draw P1 Paddle
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = p1Paddle.color;
+                ctx.fillStyle = p1Paddle.color;
+                ctx.fillRect(p1Paddle.x, p1Paddle.y, p1Paddle.w, p1Paddle.h);
+
+                // Draw P2 Paddle (Shown in PVP, Survival, or Local 2P)
+                if (currentMode === "PVP" || currentMode === "SURVIVAL" || currentMode === "LOCAL 2P") {
+                    ctx.shadowColor = p2Paddle.color;
+                    ctx.fillStyle = p2Paddle.color;
+                    ctx.fillRect(p2Paddle.x, p2Paddle.y, p2Paddle.w, p2Paddle.h);
+                }
+
+                // Draw Balls
+                balls.forEach(b => {
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                    ctx.shadowColor = b.color;
+                    ctx.fillStyle = b.color;
+                    ctx.fill();
+                });
+
+                // Draw Player Health Bar HUD
+                for (let i = 0; i < maxHp; i++) {
+                    ctx.beginPath();
+                    ctx.arc(20 + (i * 22), 560, 7, 0, Math.PI * 2);
+                    if (i < playerHp) {
+                        ctx.fillStyle = "#ff007f";
+                        ctx.shadowColor = "#ff007f";
+                        ctx.shadowBlur = 10;
+                    } else {
+                        ctx.fillStyle = "#221545";
+                        ctx.shadowBlur = 0;
+                    }
+                    ctx.fill();
+                }
+
+                // Draw Particles
                 particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                     ctx.fillStyle = p.color;
                     ctx.globalAlpha = p.life;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                    ctx.fill();
                     ctx.globalAlpha = 1.0;
                 });
 
-                balls.forEach(b => {
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = "#ffe600";
-                    ctx.fillStyle = b.color;
-                    ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2); ctx.fill();
-                });
-
+                ctx.shadowBlur = 0;
                 ctx.restore();
             }
 
             function gameLoop(now) {
-                const dt = Math.min(now - lastTime, 100);
+                if (!lastTime) lastTime = now;
+                const dt = now - lastTime;
                 lastTime = now;
+
                 update(dt);
-                draw();
+                render();
+
                 if (gameRunning) requestAnimationFrame(gameLoop);
             }
-
-            updateCurrencyDisplays();
         });
     </script>
 </body>
