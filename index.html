@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEON BOUNCE: ULTIMATE EDITION</title>
+    <title>NEON BOUNCE: OVERDRIVE SUPREME</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         * {
@@ -15,7 +15,7 @@
         }
 
         body {
-            background-color: #05050d;
+            background-color: #030308;
             color: #fff;
             display: flex;
             justify-content: center;
@@ -28,10 +28,10 @@
             position: relative;
             width: 480px;
             height: 640px;
-            background: radial-gradient(circle at center, #0d0b26 0%, #05050d 100%);
+            background: radial-gradient(circle at center, #0a081d 0%, #020205 100%);
             border-radius: 16px;
-            box-shadow: 0 0 40px rgba(0, 242, 254, 0.2), inset 0 0 15px rgba(255, 0, 127, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 50px rgba(0, 242, 254, 0.25), inset 0 0 20px rgba(255, 0, 127, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.12);
             overflow: hidden;
         }
 
@@ -51,8 +51,8 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(5, 5, 13, 0.85);
-            backdrop-filter: blur(8px);
+            background: rgba(3, 3, 8, 0.88);
+            backdrop-filter: blur(10px);
             z-index: 10;
             padding: 20px;
             transition: opacity 0.3s ease;
@@ -65,34 +65,35 @@
         }
 
         h1 {
-            font-size: 36px;
+            font-size: 28px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 3px;
             background: linear-gradient(45deg, #00f2fe, #4facfe, #ff007f);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
+            margin-bottom: 6px;
             text-align: center;
             text-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
         }
 
         .subtitle {
-            font-size: 14px;
+            font-size: 11px;
             color: #a0a0c0;
-            margin-bottom: 30px;
+            margin-bottom: 14px;
             letter-spacing: 1px;
+            text-align: center;
         }
 
         .btn {
             width: 220px;
-            padding: 12px 20px;
-            margin: 8px 0;
+            padding: 9px 16px;
+            margin: 3px 0;
             background: linear-gradient(90deg, rgba(0, 242, 254, 0.1), rgba(255, 0, 127, 0.1));
             border: 1px solid rgba(0, 242, 254, 0.4);
             color: #fff;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: 1px;
             cursor: pointer;
@@ -126,7 +127,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            padding: 15px 20px;
+            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -135,7 +136,7 @@
         }
 
         .hud-element {
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 800;
             letter-spacing: 1px;
         }
@@ -145,88 +146,116 @@
             text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
         }
 
+        .overdrive-hud {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #00f2fe;
+            border-radius: 6px;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .overdrive-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff007f, #ffe600);
+            transition: width 0.1s ease;
+        }
+
+        .combo-hud {
+            position: absolute;
+            top: 45px;
+            left: 20px;
+            font-size: 16px;
+            font-weight: 900;
+            color: #ffe600;
+            text-shadow: 0 0 10px rgba(255, 230, 0, 0.8);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .boss-hp-bar {
+            position: absolute;
+            top: 45px;
+            right: 20px;
+            width: 140px;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #ff007f;
+            border-radius: 5px;
+            overflow: hidden;
+            z-index: 5;
+        }
+
+        .boss-hp-fill {
+            width: 100%;
+            height: 100%;
+            background: #ff007f;
+            transition: width 0.1s ease;
+        }
+
+        .list-container {
+            width: 100%;
+            max-width: 380px;
+            max-height: 280px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            padding-right: 5px;
+        }
+
         .shop-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            width: 100%;
-            max-width: 360px;
-            margin-bottom: 20px;
-            max-height: 380px;
-            overflow-y: auto;
+            gap: 10px;
         }
 
-        .skin-card {
+        .item-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            padding: 12px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             cursor: pointer;
             transition: all 0.2s ease;
+            text-align: center;
         }
 
-        .skin-card:hover {
+        .item-card:hover {
             border-color: #00f2fe;
             background: rgba(0, 242, 254, 0.1);
         }
 
-        .skin-card.equipped {
+        .item-card.equipped {
             border-color: #ff007f;
             box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
         }
 
-        .skin-name {
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
+        .item-name { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+        .item-desc { font-size: 9px; color: #8a8aa8; margin-bottom: 6px; }
+        .item-status { font-size: 10px; color: #a0a0c0; font-weight: bold; }
 
-        .skin-status {
-            font-size: 10px;
-            color: #a0a0c0;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 220px;
-            margin-bottom: 15px;
-        }
-
-        input[type="text"] {
-            padding: 10px;
+        .goal-card {
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(0, 242, 254, 0.3);
-            border-radius: 6px;
-            color: #fff;
-            text-align: center;
-            outline: none;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        input[type="text"]:focus {
-            border-color: #00f2fe;
-            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
-        }
-
-        .progress-bar {
-            width: 200px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 15px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #00f2fe, #ff007f);
-            transition: width 0.2s ease;
-        }
+        .goal-info { text-align: left; }
+        .goal-title { font-size: 11px; font-weight: 700; color: #00f2fe; }
+        .goal-progress { font-size: 9px; color: #a0a0c0; }
 
         .setting-row {
             display: flex;
@@ -234,138 +263,85 @@
             align-items: center;
             width: 220px;
             margin: 8px 0;
-            font-size: 14px;
-        }
-
-        .lobby-list {
-            width: 100%;
-            max-width: 320px;
-            max-height: 150px;
-            overflow-y: auto;
-            margin: 10px 0;
-        }
-
-        .lobby-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-            margin-bottom: 6px;
-            font-size: 12px;
-        }
-
-        .lobby-item button {
-            padding: 4px 8px;
-            font-size: 10px;
-            width: auto;
-            margin: 0;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <!-- Canvas -->
         <canvas id="gameCanvas" width="480" height="640"></canvas>
 
-        <!-- In-Game HUD -->
         <div id="ui" class="hidden">
             <div class="hud-element hud-score">SCORE: <span id="score-ui">0</span></div>
-            <div class="hud-element" style="color:#a0a0c0; font-size:12px;" id="mode-ui">CLASSIC</div>
+            <div class="hud-element" style="color:#a0a0c0; font-size:11px;" id="mode-ui">CLASSIC</div>
             <div class="hud-element" style="color:#ffe600;">💎 <span id="coins-ui">0</span></div>
         </div>
 
-        <!-- Title Screen -->
+        <div id="combo-display" class="combo-hud hidden">COMBO x<span id="combo-val">1</span></div>
+        <div id="boss-hp-container" class="boss-hp-bar hidden"><div id="boss-hp-fill" class="boss-hp-fill"></div></div>
+        
+        <div id="overdrive-container" class="overdrive-hud hidden">
+            <div id="overdrive-bar" class="overdrive-fill"></div>
+        </div>
+
         <div id="title-screen" class="screen">
             <div class="currency-container">💎 <span id="menu-coins">100</span></div>
             <h1>NEON BOUNCE</h1>
-            <div class="subtitle">ULTIMATE EDITION</div>
+            <div class="subtitle">OVERDRIVE SUPREME</div>
             
             <button class="btn" id="btn-sp-start">Classic Bricks</button>
+            <button class="btn" id="btn-rain-start">Brick Rain Mode</button>
             <button class="btn" id="btn-survival-start">Survival Mode</button>
-            <button class="btn" id="btn-speed-start">Speed Demon</button>
-            <button class="btn" id="btn-boss-start">Boss Battle</button>
-            <button class="btn" id="btn-local2p-start">Local 2-Player</button>
-            <button class="btn" id="btn-pvp-menu">Online PVP</button>
-            <button class="btn" id="btn-shop-menu">Paddle Shop</button>
+            <button class="btn" id="btn-boss-start">👾 Boss Battle</button>
+            <button class="btn" id="btn-local2p-start">Enhanced 2-Player</button>
+            <button class="btn" id="btn-goals-menu">🎯 Quests & Goals</button>
+            <button class="btn" id="btn-inventory-menu">🎒 Inventory</button>
+            <button class="btn" id="btn-shop-menu">🛒 Shop</button>
             <button class="btn" id="btn-settings-menu">Settings</button>
         </div>
 
-        <!-- Shop Screen -->
+        <div id="goals-screen" class="screen hidden">
+            <h1>GOALS & QUESTS</h1>
+            <div class="subtitle">COMPLETE OBJECTIVES FOR REWARDS</div>
+            <div class="list-container" id="goals-list"></div>
+            <button class="btn" id="btn-back-goals">Back to Menu</button>
+        </div>
+
+        <div id="inventory-screen" class="screen hidden">
+            <h1>MY INVENTORY</h1>
+            <div class="subtitle">EQUIP OWNED COSMETICS</div>
+            <div class="list-container"><div class="shop-grid" id="inventory-grid"></div></div>
+            <button class="btn" id="btn-back-inventory">Back to Menu</button>
+        </div>
+
         <div id="shop-screen" class="screen hidden">
             <div class="currency-container">💎 <span id="shop-coins">100</span></div>
-            <h1>PADDLE SHOP</h1>
-            <div class="subtitle">SELECT OR UNLOCK STYLES & BUNDLES</div>
-            
-            <div class="shop-grid" id="shop-grid"></div>
-
+            <h1>SHOP</h1>
+            <div class="subtitle">UNLOCK PADDLES AND TRAILS</div>
+            <div class="list-container"><div class="shop-grid" id="shop-grid"></div></div>
             <button class="btn" id="btn-back-shop">Back to Menu</button>
         </div>
 
-        <!-- PVP Lobby Screen -->
-        <div id="pvp-screen" class="screen hidden">
-            <h1>ONLINE LOBBY</h1>
-            <div class="subtitle" id="lobby-status">CONNECTING TO PEER NETWORK...</div>
-
-            <div class="input-group">
-                <input type="text" id="create-lobby-name" placeholder="Lobby Name" maxlength="12">
-                <button class="btn" id="btn-create-lobby">Create Room</button>
-            </div>
-
-            <div style="margin: 10px 0; font-size: 12px; color: #a0a0c0;">OR JOIN ROOM CODE</div>
-
-            <div class="input-group">
-                <input type="text" id="direct-code-input" placeholder="Enter Room Code" maxlength="6">
-                <button class="btn" id="btn-join-direct">Join Code</button>
-            </div>
-
-            <div class="lobby-list" id="lobby-list-container"></div>
-
-            <button class="btn" id="btn-back-pvp">Back</button>
-        </div>
-
-        <!-- Settings Screen -->
         <div id="settings-screen" class="screen hidden">
             <h1>SETTINGS</h1>
             <div class="subtitle">PREFERENCES</div>
-
-            <div class="setting-row">
-                <span>Sound Effects</span>
-                <input type="checkbox" id="setting-sfx" checked>
-            </div>
-            <div class="setting-row">
-                <span>Synth Music</span>
-                <input type="checkbox" id="setting-music" checked>
-            </div>
-            <div class="setting-row">
-                <span>Screen Shake</span>
-                <input type="checkbox" id="setting-shake" checked>
-            </div>
-
-            <button class="btn" id="btn-back-settings" style="margin-top: 20px;">Save & Back</button>
+            <div class="setting-row"><span>Sound Effects</span><input type="checkbox" id="setting-sfx" checked></div>
+            <div class="setting-row"><span>Synth Music</span><input type="checkbox" id="setting-music" checked></div>
+            <div class="setting-row"><span>Screen Shake</span><input type="checkbox" id="setting-shake" checked></div>
+            <button class="btn" id="btn-back-settings" style="margin-top: 15px;">Save & Back</button>
         </div>
 
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="screen hidden">
-            <h1 id="loading-text">LOADING...</h1>
-            <div class="progress-bar">
-                <div class="progress-fill" id="loading-bar"></div>
-            </div>
-        </div>
-
-        <!-- Pause Overlay -->
         <div id="pause-screen" class="screen hidden">
             <h1>PAUSED</h1>
             <button class="btn" id="btn-resume">Resume</button>
             <button class="btn" id="btn-pause-quit">Quit to Menu</button>
         </div>
 
-        <!-- Game Over Screen -->
         <div id="game-over-screen" class="screen hidden">
             <h1 id="over-title">GAME OVER</h1>
             <div class="subtitle" id="winner-text">PLAY AGAIN?</div>
+            <div style="font-size: 13px; margin-bottom: 12px; color: #ffe600;" id="high-score-display">HIGH SCORE: 0</div>
             <button class="btn" id="btn-quit-menu">Main Menu</button>
         </div>
     </div>
@@ -377,69 +353,75 @@
 
             const titleScreen = document.getElementById("title-screen");
             const shopScreen = document.getElementById("shop-screen");
-            const pvpScreen = document.getElementById("pvp-screen");
+            const goalsScreen = document.getElementById("goals-screen");
+            const inventoryScreen = document.getElementById("inventory-screen");
             const settingsScreen = document.getElementById("settings-screen");
-            const loadingScreen = document.getElementById("loading-screen");
             const pauseScreen = document.getElementById("pause-screen");
             const gameOverScreen = document.getElementById("game-over-screen");
             const ui = document.getElementById("ui");
+            const comboDisplay = document.getElementById("combo-display");
+            const comboVal = document.getElementById("combo-val");
+            const overdriveContainer = document.getElementById("overdrive-container");
+            const overdriveBar = document.getElementById("overdrive-bar");
+            const bossHpContainer = document.getElementById("boss-hp-container");
+            const bossHpFill = document.getElementById("boss-hp-fill");
 
             const scoreUI = document.getElementById("score-ui");
             const coinsUI = document.getElementById("coins-ui");
             const menuCoins = document.getElementById("menu-coins");
             const shopCoins = document.getElementById("shop-coins");
             const modeUI = document.getElementById("mode-ui");
-            const lobbyStatus = document.getElementById("lobby-status");
-            const lobbyListContainer = document.getElementById("lobby-list-container");
-            const loadingBar = document.getElementById("loading-bar");
-            const loadingText = document.getElementById("loading-text");
+            const highScoreDisplay = document.getElementById("high-score-display");
             const shopGrid = document.getElementById("shop-grid");
+            const inventoryGrid = document.getElementById("inventory-grid");
+            const goalsList = document.getElementById("goals-list");
 
-            // Game State, Health & Economy
-            let coins = 100;
-            let playerHp = 3;
-            let maxHp = 3;
+            let coins = parseInt(localStorage.getItem("neon_coins")) || 100;
+            let highScores = JSON.parse(localStorage.getItem("neon_highscores")) || { CLASSIC: 0, "BRICK RAIN": 0, SURVIVAL: 0, "BOSS BATTLE": 0 };
+            let playerHp = 3, maxHp = 3;
             let settings = { sfx: true, music: true, shake: true };
 
-            let gameRunning = false;
-            let isPaused = false;
+            let gameRunning = false, isPaused = false;
             let currentMode = "CLASSIC";
-            let isHost = false;
-            let score = 0;
-            let lastTime = 0;
-            let survivalTimer = 0;
-            let screenShake = 0;
+            let score = 0, lastTime = 0;
+            let timeSlowTimer = 0;
 
-            let peer = null;
-            let conn = null;
+            let comboStreak = 0;
+            let comboTimer = 0;
+            let overdriveEnergy = 0;
+            const MAX_OVERDRIVE = 100;
 
-            // Audio Engine
-            let audioCtx = null;
-            let musicInterval = null;
+            let totalBricksBroken = parseInt(localStorage.getItem("neon_bricks")) || 0;
+            let localWins = parseInt(localStorage.getItem("neon_wins")) || 0;
 
-            function initAudio() {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            const goals = [
+                { id: "bricks_50", title: "🧱 Brick Destroyer", desc: "Break 50 Bricks", target: 50, current: totalBricksBroken, reward: 100, completed: false },
+                { id: "score_500", title: "⭐ High Scorer", desc: "Reach 500 Score", target: 500, current: 0, reward: 150, completed: false },
+                { id: "win_local", title: "⚔️ Champion", desc: "Win 1 Match in Local 2P", target: 1, current: localWins, reward: 200, completed: false }
+            ];
 
+            let p1LocalScore = 0, p2LocalScore = 0;
+            let powerUps = [], laserProjectiles = [], bossLasers = [];
+
+            const boss = { x: 180, y: 50, w: 120, h: 30, hp: 50, maxHp: 50, vx: 3, laserTimer: 0 };
+
+            let audioCtx = null, musicInterval = null;
+            function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
             function playSynthSound(freq, duration, type = "sine") {
                 if (!audioCtx || !settings.sfx) return;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
+                try {
+                    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+                    osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + duration);
+                } catch (e) {}
             }
 
             function startBackgroundMusic() {
-                initAudio();
-                if (musicInterval) clearInterval(musicInterval);
+                initAudio(); if (musicInterval) clearInterval(musicInterval);
                 if (!settings.music) return;
-
                 const notes = [220, 247, 261, 293, 329, 349, 392, 440];
                 let step = 0;
                 musicInterval = setInterval(() => {
@@ -449,50 +431,84 @@
                     }
                 }, 250);
             }
+            function stopBackgroundMusic() { if (musicInterval) clearInterval(musicInterval); }
 
-            function stopBackgroundMusic() {
-                if (musicInterval) clearInterval(musicInterval);
-            }
-
-            // Shop Database
             const shopItems = {
-                cyber: { type: "skin", name: "Cyber", color: "#00f2fe", glow: "#ff007f", cost: 0, unlocked: true },
-                fire: { type: "skin", name: "Fire", color: "#ff3300", glow: "#ffcc00", cost: 50, unlocked: false },
-                gold: { type: "skin", name: "Gold", color: "#ffe600", glow: "#ffffff", cost: 100, unlocked: false },
-                neon_overlord: { 
-                    type: "bundle", 
-                    name: "⚡ NEON BUNDLE", 
-                    color: "#ff007f", 
-                    glow: "#00f2fe", 
-                    cost: 200, 
-                    unlocked: false, 
-                    desc: "Neon Paddle + Cyan Trail" 
-                },
-                dragon_lord: { 
-                    type: "bundle", 
-                    name: "🔥 DRAGON BUNDLE", 
-                    color: "#ff5500", 
-                    glow: "#ffe600", 
-                    cost: 350, 
-                    unlocked: false, 
-                    desc: "Inferno Paddle + Fire Particles" 
-                },
-                void_walker: { 
-                    type: "bundle", 
-                    name: "🌌 VOID BUNDLE", 
-                    color: "#a855f7", 
-                    glow: "#ec4899", 
-                    cost: 500, 
-                    unlocked: false, 
-                    desc: "Quantum Paddle + Void Trail" 
-                }
+                cyber: { type: "skin", name: "Cyber Paddle", color: "#00f2fe", trailColor: "#00f2fe", cost: 0, unlocked: true, desc: "Default Neon Style" },
+                fire: { type: "skin", name: "Fire Paddle", color: "#ff3300", trailColor: "#ffcc00", cost: 50, unlocked: false, desc: "Warm Flame Glow" },
+                gold: { type: "skin", name: "Gold Paddle", color: "#ffe600", trailColor: "#ffffff", cost: 100, unlocked: false, desc: "Shimmering Gold" },
+                laser_blade: { type: "skin", name: "Laser Blade", color: "#39ff14", trailColor: "#00ff66", cost: 200, unlocked: false, desc: "Hyper Green Energy" },
+                samurai: { type: "bundle", name: "⚡ CYBER SAMURAI", color: "#ff007f", trailColor: "#00f2fe", cost: 350, unlocked: false, desc: "Neon Pink + Dual Trails" },
+                supernova: { type: "bundle", name: "🌌 SUPERNOVA NEBULA", color: "#a855f7", trailColor: "#ec4899", cost: 500, unlocked: false, desc: "Quantum Cosmic Glow" }
             };
             let equippedSkin = "cyber";
+
+            function saveData() {
+                localStorage.setItem("neon_coins", coins);
+                localStorage.setItem("neon_bricks", totalBricksBroken);
+                localStorage.setItem("neon_wins", localWins);
+                localStorage.setItem("neon_highscores", JSON.stringify(highScores));
+            }
 
             function updateCurrencyDisplays() {
                 menuCoins.textContent = coins;
                 shopCoins.textContent = coins;
                 coinsUI.textContent = coins;
+                saveData();
+            }
+
+            function checkGoals() {
+                goals.forEach(g => {
+                    if (g.id === "bricks_50") g.current = totalBricksBroken;
+                    if (g.id === "score_500") g.current = Math.max(g.current, score);
+                    if (g.id === "win_local") g.current = localWins;
+
+                    if (g.current >= g.target && !g.completed) {
+                        g.completed = true;
+                        coins += g.reward;
+                        updateCurrencyDisplays();
+                        playSynthSound(900, 0.3, "square");
+                    }
+                });
+            }
+
+            function renderGoals() {
+                goalsList.innerHTML = "";
+                goals.forEach(g => {
+                    const card = document.createElement("div");
+                    card.className = "goal-card";
+                    card.innerHTML = `
+                        <div class="goal-info">
+                            <div class="goal-title">${g.title}</div>
+                            <div class="goal-progress">${g.desc} (${Math.min(g.current, g.target)}/${g.target})</div>
+                        </div>
+                        <button class="btn" style="width: auto; padding: 6px 10px;" ${g.completed ? "disabled" : ""}>
+                            ${g.completed ? "DONE ✅" : "💎 " + g.reward}
+                        </button>
+                    `;
+                    goalsList.appendChild(card);
+                });
+            }
+
+            function renderInventory() {
+                inventoryGrid.innerHTML = "";
+                Object.keys(shopItems).forEach(key => {
+                    const item = shopItems[key];
+                    if (item.unlocked) {
+                        const card = document.createElement("div");
+                        card.className = `item-card ${equippedSkin === key ? 'equipped' : ''}`;
+                        card.innerHTML = `
+                            <div class="item-name" style="color:${item.color};">${item.name}</div>
+                            <div class="item-desc">${item.desc}</div>
+                            <div class="item-status">${equippedSkin === key ? "EQUIPPED" : "EQUIP"}</div>
+                        `;
+                        card.addEventListener("click", () => {
+                            equippedSkin = key;
+                            renderInventory();
+                        });
+                        inventoryGrid.appendChild(card);
+                    }
+                });
             }
 
             function renderShop() {
@@ -500,65 +516,47 @@
                 Object.keys(shopItems).forEach(key => {
                     const item = shopItems[key];
                     const card = document.createElement("div");
-                    card.className = `skin-card ${equippedSkin === key ? 'equipped' : ''}`;
-                    
-                    let statusText = "";
-                    if (equippedSkin === key) statusText = "EQUIPPED";
-                    else if (item.unlocked) statusText = "OWNED";
-                    else statusText = `💎 ${item.cost}`;
+                    card.className = `item-card ${equippedSkin === key ? 'equipped' : ''}`;
+                    let statusText = equippedSkin === key ? "EQUIPPED" : (item.unlocked ? "OWNED" : `💎 ${item.cost}`);
 
                     card.innerHTML = `
-                        <div class="skin-name" style="color:${item.color};">${item.name}</div>
-                        ${item.type === 'bundle' ? `<div style="font-size:7px; color:#a0a0c0; margin-top:1px;">${item.desc}</div>` : ''}
-                        <div class="skin-status">${statusText}</div>
+                        <div class="item-name" style="color:${item.color};">${item.name}</div>
+                        <div class="item-desc">${item.desc}</div>
+                        <div class="item-status">${statusText}</div>
                     `;
 
                     card.addEventListener("click", () => {
                         if (item.unlocked) {
-                            equippedSkin = key;
-                            renderShop();
+                            equippedSkin = key; renderShop();
                         } else if (coins >= item.cost) {
-                            coins -= item.cost;
-                            item.unlocked = true;
-                            equippedSkin = key;
-                            updateCurrencyDisplays();
-                            renderShop();
+                            coins -= item.cost; item.unlocked = true; equippedSkin = key;
+                            updateCurrencyDisplays(); renderShop();
                             playSynthSound(800, 0.2, "square");
                         }
                     });
-
                     shopGrid.appendChild(card);
                 });
             }
 
-            const p1Paddle = { x: 190, y: 540, w: 100, h: 14, color: '#00f2fe' };
+            const p1Paddle = { x: 190, y: 540, w: 100, h: 14, color: '#00f2fe', hasLaser: false };
             const p2Paddle = { x: 190, y: 20, w: 100, h: 14, color: '#ff007f' };
-            let boss = { x: 190, y: 40, w: 120, h: 20, hp: 100, maxHp: 100, vx: 3 };
 
-            let balls = [];
-            let bricks = [];
-            let particles = [];
-            let trail = [];
-
+            let balls = [], bricks = [], particles = [], trail = [];
             const keys = {};
+
             window.addEventListener("keydown", (e) => {
                 keys[e.key] = true;
                 if ((e.key === "p" || e.key === "P" || e.key === "Escape") && gameRunning) togglePause();
+                if ((e.key === "e" || e.key === "E") && overdriveEnergy >= MAX_OVERDRIVE && gameRunning) triggerOverdrive();
+                if (e.key === " " && p1Paddle.hasLaser && gameRunning) fireLasers();
             });
             window.addEventListener("keyup", (e) => keys[e.key] = false);
 
             canvas.addEventListener("mousemove", (e) => {
                 if (!gameRunning || isPaused || currentMode === "LOCAL 2P") return;
                 const rect = canvas.getBoundingClientRect();
-                const mouseX = (e.clientX - rect.left) - p1Paddle.w / 2;
-                
-                if (currentMode === "PVP" && !isHost) {
-                    p2Paddle.x = mouseX;
-                    clampPaddle(p2Paddle);
-                } else {
-                    p1Paddle.x = mouseX;
-                    clampPaddle(p1Paddle);
-                }
+                p1Paddle.x = (e.clientX - rect.left) - p1Paddle.w / 2;
+                clampPaddle(p1Paddle);
             });
 
             function clampPaddle(p) {
@@ -572,125 +570,54 @@
                 else { pauseScreen.classList.add("hidden"); lastTime = performance.now(); }
             }
 
-            function createParticles(x, y, color, count = 10) {
+            function fireLasers() {
+                laserProjectiles.push(
+                    { x: p1Paddle.x + 10, y: p1Paddle.y, vy: -10, w: 4, h: 12 },
+                    { x: p1Paddle.x + p1Paddle.w - 14, y: p1Paddle.y, vy: -10, w: 4, h: 12 }
+                );
+                playSynthSound(1200, 0.08, "sawtooth");
+            }
+
+            function triggerOverdrive() {
+                overdriveEnergy = 0;
+                overdriveBar.style.width = "0%";
+                balls.push(createBall(-5, 1.2), createBall(-4, 1.1));
+                playSynthSound(1500, 0.4, "square");
+            }
+
+            function createParticles(x, y, color, count = 8) {
+                if (particles.length > 150) return; // Prevent performance freeze from particle overflow
                 for (let i = 0; i < count; i++) {
                     particles.push({
                         x, y,
-                        vx: (Math.random() - 0.5) * 6,
-                        vy: (Math.random() - 0.5) * 6,
-                        size: Math.random() * 4 + 2,
-                        color,
-                        life: 1.0
+                        vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6,
+                        size: Math.random() * 3 + 2, color, life: 1.0
                     });
                 }
             }
 
-            // PVP & Peer Networking
-            function createLobby() {
-                initAudio();
-                const customName = document.getElementById("create-lobby-name").value || "NEON MATCH";
-                const roomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-                
-                peer = new Peer(roomCode);
-                lobbyStatus.textContent = "CREATING LOBBY...";
-
-                peer.on('open', (id) => {
-                    lobbyStatus.textContent = `LOBBY '${customName.toUpperCase()}' OPEN (ID: ${id})`;
-                    isHost = true;
-                    addLobbyToUI(customName, id);
-                });
-
-                peer.on('connection', (connection) => {
-                    conn = connection;
-                    setupDataListeners();
-                    lobbyStatus.textContent = "PLAYER 2 JOINED LOBBY!";
-                    setTimeout(() => { pvpScreen.classList.add("hidden"); triggerLoadingSequence("PVP"); }, 800);
-                });
+            function spawnPowerUp(x, y) {
+                const types = ["WIDE", "LIFE", "LASER", "SLOW"];
+                const chosen = types[Math.floor(Math.random() * types.length)];
+                powerUps.push({ x, y, type: chosen, vy: 2, size: 12 });
             }
 
-            function addLobbyToUI(name, code) {
-                lobbyListContainer.innerHTML = "";
-                const item = document.createElement("div");
-                item.className = "lobby-item";
-                item.innerHTML = `<span><strong>${name}</strong> [${code}]</span> <button onclick="joinLobbyByID('${code}')">JOIN</button>`;
-                lobbyListContainer.appendChild(item);
-            }
+            document.getElementById("btn-sp-start").addEventListener("click", () => startGame("CLASSIC"));
+            document.getElementById("btn-rain-start").addEventListener("click", () => startGame("BRICK RAIN"));
+            document.getElementById("btn-survival-start").addEventListener("click", () => startGame("SURVIVAL"));
+            document.getElementById("btn-boss-start").addEventListener("click", () => startGame("BOSS BATTLE"));
+            document.getElementById("btn-local2p-start").addEventListener("click", () => startGame("LOCAL 2P"));
 
-            window.joinLobbyByID = function(code) {
-                initAudio();
-                peer = new Peer();
-                lobbyStatus.textContent = `JOINING LOBBY ${code}...`;
-                peer.on('open', () => {
-                    conn = peer.connect(code.toUpperCase());
-                    isHost = false;
-                    setupDataListeners();
-                    conn.on('open', () => {
-                        lobbyStatus.textContent = "CONNECTED TO LOBBY!";
-                        setTimeout(() => { pvpScreen.classList.add("hidden"); triggerLoadingSequence("PVP"); }, 800);
-                    });
-                });
-            };
+            document.getElementById("btn-goals-menu").addEventListener("click", () => { renderGoals(); titleScreen.classList.add("hidden"); goalsScreen.classList.remove("hidden"); });
+            document.getElementById("btn-back-goals").addEventListener("click", () => { goalsScreen.classList.add("hidden"); titleScreen.classList.remove("hidden"); });
 
-            function setupDataListeners() {
-                conn.on('data', (data) => {
-                    if (isHost) {
-                        if (data.p2X !== undefined) p2Paddle.x = data.p2X;
-                    } else {
-                        if (data.p1X !== undefined) p1Paddle.x = data.p1X;
-                        if (data.ball) {
-                            balls[0].x = data.ball.x;
-                            balls[0].y = data.ball.y;
-                        }
-                        if (data.score !== undefined) {
-                            score = data.score;
-                            scoreUI.textContent = score;
-                        }
-                    }
-                });
-            }
+            document.getElementById("btn-inventory-menu").addEventListener("click", () => { renderInventory(); titleScreen.classList.add("hidden"); inventoryScreen.classList.remove("hidden"); });
+            document.getElementById("btn-back-inventory").addEventListener("click", () => { inventoryScreen.classList.add("hidden"); titleScreen.classList.remove("hidden"); });
 
-            function syncOnlineData() {
-                if (!conn || !conn.open) return;
-                if (isHost) {
-                    conn.send({
-                        p1X: p1Paddle.x,
-                        ball: balls[0] ? { x: balls[0].x, y: balls[0].y } : null,
-                        score: score
-                    });
-                } else {
-                    conn.send({ p2X: p2Paddle.x });
-                }
-            }
+            document.getElementById("btn-shop-menu").addEventListener("click", () => { renderShop(); updateCurrencyDisplays(); titleScreen.classList.add("hidden"); shopScreen.classList.remove("hidden"); });
+            document.getElementById("btn-back-shop").addEventListener("click", () => { shopScreen.classList.add("hidden"); titleScreen.classList.remove("hidden"); });
 
-            // Navigation Handlers
-            document.getElementById("btn-sp-start").addEventListener("click", () => triggerLoadingSequence("CLASSIC"));
-            document.getElementById("btn-survival-start").addEventListener("click", () => triggerLoadingSequence("SURVIVAL"));
-            document.getElementById("btn-speed-start").addEventListener("click", () => triggerLoadingSequence("SPEED DEMON"));
-            document.getElementById("btn-boss-start").addEventListener("click", () => triggerLoadingSequence("BOSS BATTLE"));
-
-            const btnLocal2P = document.getElementById("btn-local2p-start");
-            if (btnLocal2P) {
-                btnLocal2P.addEventListener("click", () => triggerLoadingSequence("LOCAL 2P"));
-            }
-
-            document.getElementById("btn-shop-menu").addEventListener("click", () => {
-                renderShop(); updateCurrencyDisplays();
-                titleScreen.classList.add("hidden"); shopScreen.classList.remove("hidden");
-            });
-            document.getElementById("btn-back-shop").addEventListener("click", () => {
-                shopScreen.classList.add("hidden"); titleScreen.classList.remove("hidden");
-            });
-
-            document.getElementById("btn-pvp-menu").addEventListener("click", () => {
-                titleScreen.classList.add("hidden"); pvpScreen.classList.remove("hidden");
-            });
-            document.getElementById("btn-back-pvp").addEventListener("click", () => {
-                pvpScreen.classList.add("hidden"); titleScreen.classList.remove("hidden");
-            });
-
-            document.getElementById("btn-settings-menu").addEventListener("click", () => {
-                titleScreen.classList.add("hidden"); settingsScreen.classList.remove("hidden");
-            });
+            document.getElementById("btn-settings-menu").addEventListener("click", () => { titleScreen.classList.add("hidden"); settingsScreen.classList.remove("hidden"); });
             document.getElementById("btn-back-settings").addEventListener("click", () => {
                 settings.sfx = document.getElementById("setting-sfx").checked;
                 settings.music = document.getElementById("setting-music").checked;
@@ -698,376 +625,334 @@
                 settingsScreen.classList.add("hidden"); titleScreen.classList.remove("hidden");
             });
 
-            document.getElementById("btn-create-lobby").addEventListener("click", createLobby);
-            document.getElementById("btn-join-direct").addEventListener("click", () => {
-                const code = document.getElementById("direct-code-input").value;
-                if (code) joinLobbyByID(code);
-            });
-
             document.getElementById("btn-resume").addEventListener("click", () => { if (isPaused) togglePause(); });
             document.getElementById("btn-pause-quit").addEventListener("click", quitToMenu);
             document.getElementById("btn-quit-menu").addEventListener("click", quitToMenu);
 
-            function triggerLoadingSequence(mode) {
-                initAudio();
-                titleScreen.classList.add("hidden");
-                loadingScreen.classList.remove("hidden");
-
-                let progress = 0;
-                loadingBar.style.width = "0%";
-                loadingText.textContent = `PREPARING ${mode}...`;
-
-                const interval = setInterval(() => {
-                    progress += 20;
-                    loadingBar.style.width = `${progress}%`;
-
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        loadingScreen.classList.add("hidden");
-                        startGame(mode);
-                    }
-                }, 150);
-            }
-
             function createBall(vy = -4, speedMultiplier = 1) {
-                return { 
-                    x: canvas.width / 2, 
-                    y: canvas.height / 2, 
-                    radius: 8, 
-                    vx: (Math.random() > 0.5 ? 4 : -4) * speedMultiplier, 
-                    vy: vy * speedMultiplier, 
-                    color: '#ffe600' 
-                };
+                return { x: canvas.width / 2, y: canvas.height / 2, radius: 8, vx: (Math.random() > 0.5 ? 4 : -4) * speedMultiplier, vy: vy * speedMultiplier, color: '#ffe600' };
             }
 
             function initBricks() {
                 bricks = [];
-                const rows = 4, cols = 6, width = 68, height = 18, padding = 8, offsetLeft = 15, offsetTop = 60;
-                const colors = ["#ff007f", "#7928ca", "#00f2fe", "#ffe600"];
+                const rows = 5, cols = 6, width = 68, height = 18, padding = 8, offsetLeft = 15, offsetTop = 60;
+                const colors = ["#ff007f", "#ff5500", "#7928ca", "#00f2fe", "#ffe600"];
 
                 for (let r = 0; r < rows; r++) {
                     for (let c = 0; c < cols; c++) {
-                        bricks.push({ x: c * (width + padding) + offsetLeft, y: r * (height + padding) + offsetTop, w: width, h: height, color: colors[r % colors.length], active: true });
+                        let type = "normal";
+                        let hp = 1;
+                        let color = colors[r % colors.length];
+
+                        if (Math.random() < 0.1) { type = "explosive"; color = "#ff3300"; }
+                        else if (Math.random() < 0.15) { type = "armor"; hp = 2; color = "#8888aa"; }
+
+                        bricks.push({
+                            x: c * (width + padding) + offsetLeft,
+                            y: r * (height + padding) + offsetTop,
+                            w: width, h: height, color, active: true,
+                            type, hp, hasPowerUp: Math.random() < 0.2
+                        });
                     }
                 }
             }
 
             function startGame(mode) {
                 gameRunning = true; isPaused = false; currentMode = mode;
-                score = 0; survivalTimer = 0; screenShake = 0;
-                playerHp = maxHp;
-                particles = []; trail = [];
+                score = 0; comboStreak = 0; overdriveEnergy = 0; timeSlowTimer = 0;
+                p1LocalScore = 0; p2LocalScore = 0; playerHp = maxHp;
+                particles = []; trail = []; powerUps = []; laserProjectiles = []; bossLasers = [];
                 
+                boss.hp = boss.maxHp;
                 updateCurrencyDisplays();
                 scoreUI.textContent = "0"; modeUI.textContent = mode;
-                
                 p1Paddle.color = shopItems[equippedSkin].color;
+                p1Paddle.w = 100; p1Paddle.hasLaser = false;
 
-                if (mode === "SPEED DEMON") balls = [createBall(-7, 1.8)];
-                else balls = [createBall()];
-
-                if (mode === "CLASSIC" || mode === "SPEED DEMON") initBricks();
+                balls = [createBall()];
+                if (mode === "CLASSIC" || mode === "BRICK RAIN" || mode === "LOCAL 2P") initBricks();
                 else bricks = [];
 
-                if (mode === "BOSS BATTLE") { boss.hp = 100; boss.x = 180; }
+                if (mode === "BOSS BATTLE") bossHpContainer.classList.remove("hidden");
+                else bossHpContainer.classList.add("hidden");
 
                 titleScreen.classList.add("hidden"); gameOverScreen.classList.add("hidden"); ui.classList.remove("hidden");
+                comboDisplay.classList.remove("hidden"); overdriveContainer.classList.remove("hidden");
                 startBackgroundMusic();
                 lastTime = performance.now(); requestAnimationFrame(gameLoop);
             }
 
             function quitToMenu() {
                 gameRunning = false; isPaused = false;
-                stopBackgroundMusic();
-                updateCurrencyDisplays();
+                stopBackgroundMusic(); checkGoals(); updateCurrencyDisplays();
                 pauseScreen.classList.add("hidden"); gameOverScreen.classList.add("hidden"); ui.classList.add("hidden");
+                comboDisplay.classList.add("hidden"); overdriveContainer.classList.add("hidden"); bossHpContainer.classList.add("hidden");
                 titleScreen.classList.remove("hidden");
-                if (peer) peer.destroy();
             }
 
             function update(dt) {
                 if (!gameRunning || isPaused) return;
-                const ts = dt / 16.66;
 
-                if (screenShake > 0) screenShake -= dt * 0.02;
+                // Frame Delta Guard against freezes/alt-tab delays
+                const clampedDt = Math.min(dt, 32);
 
-                if (currentMode === "SURVIVAL") {
-                    survivalTimer += dt;
-                    if (survivalTimer > 7000) {
-                        survivalTimer = 0;
-                        balls.push(createBall(Math.random() > 0.5 ? 4 : -4));
-                        if (settings.shake) screenShake = 5;
-                        playSynthSound(600, 0.2, "sawtooth");
+                const speedFactor = timeSlowTimer > 0 ? 0.5 : 1.0;
+                if (timeSlowTimer > 0) timeSlowTimer -= clampedDt;
+
+                const ts = (clampedDt / 16.66) * speedFactor;
+
+                // Boss Logic
+                if (currentMode === "BOSS BATTLE") {
+                    boss.x += boss.vx * ts;
+                    if (boss.x <= 10 || boss.x + boss.w >= canvas.width - 10) boss.vx *= -1;
+                    boss.laserTimer += clampedDt;
+                    if (boss.laserTimer > 2000) {
+                        boss.laserTimer = 0;
+                        bossLasers.push({ x: boss.x + boss.w / 2, y: boss.y + boss.h, vy: 5, w: 6, h: 14 });
                     }
                 }
 
-                if (currentMode === "BOSS BATTLE") {
-                    boss.x += boss.vx * ts;
-                    if (boss.x <= 0 || boss.x + boss.w >= canvas.width) boss.vx *= -1;
+                bossLasers.forEach(bl => {
+                    bl.y += bl.vy * ts;
+                    if (bl.y + bl.h >= p1Paddle.y && bl.x >= p1Paddle.x && bl.x <= p1Paddle.x + p1Paddle.w) {
+                        playerHp--;
+                        bl.out = true;
+                        createParticles(bl.x, bl.y, "#ff007f", 12);
+                    }
+                });
+                bossLasers = bossLasers.filter(bl => !bl.out && bl.y < canvas.height);
+
+                // Laser Logic
+                laserProjectiles.forEach(l => {
+                    l.y += l.vy * ts;
+                    if (currentMode === "BOSS BATTLE" && l.x > boss.x && l.x < boss.x + boss.w && l.y > boss.y && l.y < boss.y + boss.h) {
+                        boss.hp--;
+                        l.out = true;
+                        bossHpFill.style.width = `${(boss.hp / boss.maxHp) * 100}%`;
+                        createParticles(l.x, l.y, "#ff007f", 8);
+                        if (boss.hp <= 0) gameOver(true, "BOSS DESTROYED!");
+                    }
+                    bricks.forEach(b => {
+                        if (b.active && l.x > b.x && l.x < b.x + b.w && l.y > b.y && l.y < b.y + b.h) {
+                            b.hp--;
+                            if (b.hp <= 0) b.active = false;
+                            l.out = true;
+                            createParticles(l.x, l.y, "#39ff14", 6);
+                        }
+                    });
+                });
+                laserProjectiles = laserProjectiles.filter(l => !l.out && l.y > 0);
+
+                if (comboStreak > 0) {
+                    comboTimer -= clampedDt;
+                    if (comboTimer <= 0) comboStreak = 0;
                 }
+                comboVal.textContent = Math.max(1, comboStreak);
 
                 // Controls
                 if (currentMode === "LOCAL 2P") {
-                    if (keys["ArrowLeft"]) p1Paddle.x -= 6 * ts;
-                    if (keys["ArrowRight"]) p1Paddle.x += 6 * ts;
-
-                    if (keys["a"] || keys["A"]) p2Paddle.x -= 6 * ts;
-                    if (keys["d"] || keys["D"]) p2Paddle.x += 6 * ts;
-
-                    clampPaddle(p1Paddle);
-                    clampPaddle(p2Paddle);
-                } else if (currentMode !== "PVP" || isHost) {
+                    if (keys["ArrowLeft"]) p1Paddle.x -= 7 * ts;
+                    if (keys["ArrowRight"]) p1Paddle.x += 7 * ts;
+                    if (keys["a"] || keys["A"]) p2Paddle.x -= 7 * ts;
+                    if (keys["d"] || keys["D"]) p2Paddle.x += 7 * ts;
+                    clampPaddle(p1Paddle); clampPaddle(p2Paddle);
+                } else {
                     if (keys["ArrowLeft"]) p1Paddle.x -= 6 * ts;
                     if (keys["ArrowRight"]) p1Paddle.x += 6 * ts;
                     clampPaddle(p1Paddle);
                 }
 
-                if (currentMode !== "PVP" && currentMode !== "BOSS BATTLE" && currentMode !== "LOCAL 2P") {
+                if (currentMode !== "LOCAL 2P" && balls.length > 0 && currentMode !== "BOSS BATTLE") {
                     p2Paddle.x += (balls[0].x - (p2Paddle.x + p2Paddle.w / 2)) * 0.08 * ts;
                     clampPaddle(p2Paddle);
-                } else if (currentMode === "PVP" && !isHost) {
-                    if (keys["ArrowLeft"]) p2Paddle.x -= 6 * ts;
-                    if (keys["ArrowRight"]) p2Paddle.x += 6 * ts;
-                    clampPaddle(p2Paddle);
                 }
 
-                if (currentMode !== "PVP" || isHost) {
-                    balls.forEach(b => {
-                        b.x += b.vx * ts; b.y += b.vy * ts;
-                        trail.push({ x: b.x, y: b.y, life: 1.0 });
-
-                        // Wall collisions
-                        if (b.x - b.radius <= 0) {
-                            b.x = b.radius;
-                            b.vx *= -1;
-                            playSynthSound(300, 0.05);
-                        } else if (b.x + b.radius >= canvas.width) {
-                            b.x = canvas.width - b.radius;
-                            b.vx *= -1;
-                            playSynthSound(300, 0.05);
-                        }
-
-                        // Top boundary collision
-                        if (currentMode !== "PVP" && currentMode !== "LOCAL 2P" && b.y - b.radius <= 0) {
-                            b.y = b.radius;
-                            b.vy *= -1;
-                            playSynthSound(350, 0.05);
-                        } else if (currentMode === "LOCAL 2P" && b.y - b.radius <= 0) {
-                            b.out = true;
-                            score += 50;
-                            scoreUI.textContent = score;
-                            playSynthSound(600, 0.2, "sine");
-                            setTimeout(() => { if (gameRunning && balls.length === 0) balls.push(createBall(4)); }, 500);
-                        }
-
-                        // Bottom boundary
-                        if (b.y + b.radius >= canvas.height) {
-                            b.out = true;
-                            playerHp--;
-                            if (settings.shake) screenShake = 12;
-                            playSynthSound(120, 0.3, "sawtooth");
-
-                            if (playerHp > 0) {
-                                setTimeout(() => {
-                                    if (gameRunning && balls.length === 0) balls.push(createBall());
-                                }, 500);
-                            }
-                        }
-
-                        // Paddle 1 Collision
-                        if (b.y + b.radius >= p1Paddle.y && b.y - b.radius <= p1Paddle.y + p1Paddle.h &&
-                            b.x >= p1Paddle.x && b.x <= p1Paddle.x + p1Paddle.w && b.vy > 0) {
-                            b.vy *= -1.05;
-                            let hitPoint = (b.x - (p1Paddle.x + p1Paddle.w / 2)) / (p1Paddle.w / 2);
-                            b.vx = hitPoint * 7;
-                            createParticles(b.x, b.y, p1Paddle.color, 12);
-                            playSynthSound(440, 0.1, "square");
-                            score += 10;
-                            coins += 1;
-                            updateCurrencyDisplays();
-                            scoreUI.textContent = score;
-                        }
-
-                        // Paddle 2 Collision
-                        if (b.y - b.radius <= p2Paddle.y + p2Paddle.h && b.y + b.radius >= p2Paddle.y &&
-                            b.x >= p2Paddle.x && b.x <= p2Paddle.x + p2Paddle.w && b.vy < 0) {
-                            b.vy *= -1.05;
-                            let hitPoint = (b.x - (p2Paddle.x + p2Paddle.w / 2)) / (p2Paddle.w / 2);
-                            b.vx = hitPoint * 7;
-                            createParticles(b.x, b.y, p2Paddle.color, 12);
-                            playSynthSound(400, 0.1, "square");
-                        }
-
-                        // Boss Collision
-                        if (currentMode === "BOSS BATTLE") {
-                            if (b.y - b.radius <= boss.y + boss.h && b.y + b.radius >= boss.y &&
-                                b.x >= boss.x && b.x <= boss.x + boss.w && b.vy < 0) {
-                                b.vy *= -1;
-                                boss.hp -= 5;
-                                score += 50;
-                                coins += 5;
-                                updateCurrencyDisplays();
-                                createParticles(b.x, b.y, "#ff007f", 20);
-                                playSynthSound(150, 0.2, "sawtooth");
-                                if (settings.shake) screenShake = 8;
-                                if (boss.hp <= 0) gameOver(true, "BOSS DESTROYED!");
-                            }
-                        }
-
-                        // Brick Collisions
-                        if (currentMode === "CLASSIC" || currentMode === "SPEED DEMON") {
-                            bricks.forEach(brick => {
-                                if (brick.active) {
-                                    if (b.x + b.radius > brick.x && b.x - b.radius < brick.x + brick.w &&
-                                        b.y + b.radius > brick.y && b.y - b.radius < brick.y + brick.h) {
-                                        brick.active = false;
-                                        b.vy *= -1;
-                                        score += 20;
-                                        coins += 2;
-                                        updateCurrencyDisplays();
-                                        scoreUI.textContent = score;
-                                        createParticles(b.x, b.y, brick.color, 15);
-                                        playSynthSound(520, 0.08, "triangle");
-
-                                        if (bricks.every(br => !br.active)) {
-                                            initBricks();
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                    });
-
-                    balls = balls.filter(b => !b.out);
-
-                    if (playerHp <= 0) {
-                        gameOver(false, "GAME OVER - OUT OF HEALTH");
+                // Power-Ups
+                powerUps.forEach(p => {
+                    p.y += p.vy * ts;
+                    if (p.y + p.size >= p1Paddle.y && p.x >= p1Paddle.x && p.x <= p1Paddle.x + p1Paddle.w) {
+                        if (p.type === "WIDE") p1Paddle.w = Math.min(150, p1Paddle.w + 20);
+                        if (p.type === "LIFE") playerHp = Math.min(maxHp, playerHp + 1);
+                        if (p.type === "LASER") p1Paddle.hasLaser = true;
+                        if (p.type === "SLOW") timeSlowTimer = 5000;
+                        p.collected = true;
+                        playSynthSound(800, 0.15, "square");
                     }
+                });
+                powerUps = powerUps.filter(p => !p.collected && p.y < canvas.height);
+
+                // Ball Movement
+                balls.forEach(b => {
+                    b.x += b.vx * ts; b.y += b.vy * ts;
+
+                    if (trail.length < 100) {
+                        trail.push({ x: b.x, y: b.y, life: 1.0, color: shopItems[equippedSkin].trailColor });
+                    }
+
+                    if (b.x - b.radius <= 0) { b.x = b.radius; b.vx *= -1; }
+                    if (b.x + b.radius >= canvas.width) { b.x = canvas.width - b.radius; b.vx *= -1; }
+                    if (b.y - b.radius <= 0 && currentMode !== "LOCAL 2P") { b.y = b.radius; b.vy *= -1; }
+
+                    if (currentMode === "BOSS BATTLE" && b.y - b.radius <= boss.y + boss.h && b.x >= boss.x && b.x <= boss.x + boss.w) {
+                        boss.hp -= 2;
+                        b.vy *= -1;
+                        bossHpFill.style.width = `${(boss.hp / boss.maxHp) * 100}%`;
+                        createParticles(b.x, b.y, "#ff007f", 12);
+                        if (boss.hp <= 0) gameOver(true, "BOSS DESTROYED!");
+                    }
+
+                    if (b.y + b.radius >= canvas.height) {
+                        b.out = true;
+                        if (currentMode === "LOCAL 2P") {
+                            p2LocalScore++;
+                            if (p2LocalScore >= 5) gameOver(true, "PLAYER 2 WINS!");
+                            else setTimeout(() => { if (gameRunning && balls.length === 0) balls.push(createBall(-4)); }, 500);
+                        } else if (balls.length === 1) {
+                            playerHp--;
+                            comboStreak = 0;
+                            if (playerHp > 0) setTimeout(() => { if (gameRunning && balls.length === 0) balls.push(createBall()); }, 500);
+                        }
+                    }
+
+                    // Paddle Bounce
+                    if (b.y + b.radius >= p1Paddle.y && b.y - b.radius <= p1Paddle.y + p1Paddle.h &&
+                        b.x >= p1Paddle.x && b.x <= p1Paddle.x + p1Paddle.w && b.vy > 0) {
+                        b.vy *= -1.05;
+                        b.vx = ((b.x - (p1Paddle.x + p1Paddle.w / 2)) / (p1Paddle.w / 2)) * 7;
+                        createParticles(b.x, b.y, p1Paddle.color, 8);
+                        playSynthSound(400, 0.05, "sine");
+                    }
+
+                    // Brick Collision Detection
+                    for (let i = 0; i < bricks.length; i++) {
+                        const brick = bricks[i];
+                        if (brick.active && b.x + b.radius > brick.x && b.x - b.radius < brick.x + brick.w &&
+                            b.y + b.radius > brick.y && b.y - b.radius < brick.y + brick.h) {
+                            
+                            brick.hp--;
+                            if (brick.hp <= 0) {
+                                brick.active = false;
+                                totalBricksBroken++;
+                                if (brick.type === "explosive") createParticles(brick.x, brick.y, "#ff3300", 15);
+                                if (brick.hasPowerUp) spawnPowerUp(brick.x + brick.w / 2, brick.y);
+                            }
+
+                            b.vy *= -1;
+                            comboStreak++; comboTimer = 3000;
+                            score += 20 * Math.min(4, comboStreak); coins += 1;
+                            scoreUI.textContent = score;
+
+                            overdriveEnergy = Math.min(MAX_OVERDRIVE, overdriveEnergy + 5);
+                            overdriveBar.style.width = `${(overdriveEnergy / MAX_OVERDRIVE) * 100}%`;
+
+                            createParticles(b.x, b.y, brick.color, 8);
+                            playSynthSound(600 + comboStreak * 50, 0.08, "square");
+
+                            if (bricks.every(br => !br.active)) initBricks();
+                            break; // Stop loop to prevent duplicate continuous collision checks
+                        }
+                    }
+                });
+
+                balls = balls.filter(b => !b.out);
+                if (playerHp <= 0 && currentMode !== "LOCAL 2P") gameOver(false, "GAME OVER");
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+                    if (p.life <= 0) particles.splice(i, 1);
                 }
 
-                particles.forEach(p => {
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.life -= 0.03;
-                });
-                particles = particles.filter(p => p.life > 0);
+                for (let i = trail.length - 1; i >= 0; i--) {
+                    const t = trail[i];
+                    t.life -= 0.08;
+                    if (t.life <= 0) trail.splice(i, 1);
+                }
 
-                trail.forEach(t => t.life -= 0.05);
-                trail = trail.filter(t => t.life > 0);
-
-                if (currentMode === "PVP") syncOnlineData();
+                checkGoals();
             }
 
             function gameOver(won, message) {
                 gameRunning = false;
-                stopBackgroundMusic();
+                stopBackgroundMusic(); checkGoals();
+
+                if (score > (highScores[currentMode] || 0)) highScores[currentMode] = score;
+                saveData();
+
                 document.getElementById("over-title").textContent = won ? "VICTORY!" : "GAME OVER";
                 document.getElementById("winner-text").textContent = message;
-                gameOverScreen.classList.remove("hidden");
-                ui.classList.add("hidden");
+                highScoreDisplay.textContent = `HIGH SCORE: ${highScores[currentMode] || score}`;
+                gameOverScreen.classList.remove("hidden"); ui.classList.add("hidden");
+                bossHpContainer.classList.add("hidden");
             }
 
             function render() {
-                ctx.save();
-                
-                if (screenShake > 0) {
-                    ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
-                }
-
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Draw Trails
-                trail.forEach(t => {
-                    ctx.beginPath();
-                    ctx.arc(t.x, t.y, 6 * t.life, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(0, 242, 254, ${t.life * 0.4})`;
-                    ctx.fill();
-                });
+                ctx.strokeStyle = "rgba(0, 242, 254, 0.05)";
+                ctx.lineWidth = 1;
+                for (let x = 0; x < canvas.width; x += 30) {
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+                }
+                for (let y = 0; y < canvas.height; y += 30) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+                }
 
-                // Draw Bricks
-                bricks.forEach(b => {
-                    if (b.active) {
-                        ctx.shadowBlur = 10;
-                        ctx.shadowColor = b.color;
-                        ctx.fillStyle = b.color;
-                        ctx.fillRect(b.x, b.y, b.w, b.h);
-                        ctx.shadowBlur = 0;
-                    }
-                });
-
-                // Draw Boss
                 if (currentMode === "BOSS BATTLE") {
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = "#ff007f";
                     ctx.fillStyle = "#ff007f";
                     ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
-
-                    ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-                    ctx.fillRect(100, 10, 280, 8);
-                    ctx.fillStyle = "#00f2fe";
-                    ctx.fillRect(100, 10, (boss.hp / boss.maxHp) * 280, 8);
-                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = "#ffe600";
+                    ctx.strokeRect(boss.x + 2, boss.y + 2, boss.w - 4, boss.h - 4);
                 }
 
-                // Draw P1 Paddle
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = p1Paddle.color;
+                ctx.fillStyle = "#ff0055";
+                bossLasers.forEach(bl => ctx.fillRect(bl.x, bl.y, bl.w, bl.h));
+
+                trail.forEach(t => {
+                    ctx.beginPath(); ctx.arc(t.x, t.y, 6 * t.life, 0, Math.PI * 2);
+                    ctx.fillStyle = t.color || "#00f2fe"; ctx.globalAlpha = t.life * 0.5;
+                    ctx.fill(); ctx.globalAlpha = 1.0;
+                });
+
+                bricks.forEach(b => {
+                    if (b.active) {
+                        ctx.fillStyle = b.color;
+                        ctx.fillRect(b.x, b.y, b.w, b.h);
+                        if (b.type === "armor" && b.hp === 2) {
+                            ctx.strokeStyle = "#ffffff"; ctx.strokeRect(b.x + 2, b.y + 2, b.w - 4, b.h - 4);
+                        }
+                    }
+                });
+
+                ctx.fillStyle = "#39ff14";
+                laserProjectiles.forEach(l => ctx.fillRect(l.x, l.y, l.w, l.h));
+
+                powerUps.forEach(p => {
+                    ctx.fillStyle = p.type === "WIDE" ? "#00f2fe" : (p.type === "LIFE" ? "#ff007f" : (p.type === "SLOW" ? "#00ffe1" : "#39ff14"));
+                    ctx.fillRect(p.x - 6, p.y - 6, 12, 12);
+                });
+
                 ctx.fillStyle = p1Paddle.color;
                 ctx.fillRect(p1Paddle.x, p1Paddle.y, p1Paddle.w, p1Paddle.h);
-
-                // Draw P2 Paddle
-                if (currentMode === "PVP" || currentMode === "SURVIVAL" || currentMode === "LOCAL 2P") {
-                    ctx.shadowColor = p2Paddle.color;
-                    ctx.fillStyle = p2Paddle.color;
-                    ctx.fillRect(p2Paddle.x, p2Paddle.y, p2Paddle.w, p2Paddle.h);
+                if (currentMode === "LOCAL 2P") {
+                    ctx.fillStyle = p2Paddle.color; ctx.fillRect(p2Paddle.x, p2Paddle.y, p2Paddle.w, p2Paddle.h);
                 }
 
-                // Draw Balls
                 balls.forEach(b => {
-                    ctx.beginPath();
-                    ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-                    ctx.shadowColor = b.color;
-                    ctx.fillStyle = b.color;
-                    ctx.fill();
+                    ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = b.color; ctx.fill();
                 });
-
-                // Draw Player Health Bar HUD
-                for (let i = 0; i < maxHp; i++) {
-                    ctx.beginPath();
-                    ctx.arc(20 + (i * 22), 560, 7, 0, Math.PI * 2);
-                    if (i < playerHp) {
-                        ctx.fillStyle = "#ff007f";
-                        ctx.shadowColor = "#ff007f";
-                        ctx.shadowBlur = 10;
-                    } else {
-                        ctx.fillStyle = "#221545";
-                        ctx.shadowBlur = 0;
-                    }
-                    ctx.fill();
-                }
-
-                // Draw Particles
                 particles.forEach(p => {
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fillStyle = p.color;
-                    ctx.globalAlpha = p.life;
-                    ctx.fill();
-                    ctx.globalAlpha = 1.0;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fill(); ctx.globalAlpha = 1.0;
                 });
-
-                ctx.shadowBlur = 0;
-                ctx.restore();
             }
 
             function gameLoop(now) {
                 if (!lastTime) lastTime = now;
                 const dt = now - lastTime;
                 lastTime = now;
-
-                update(dt);
-                render();
-
+                update(dt); render();
                 if (gameRunning) requestAnimationFrame(gameLoop);
             }
         });
