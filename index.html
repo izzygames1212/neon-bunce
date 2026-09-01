@@ -1,829 +1,985 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tuff Game Hub - Retro Graphics Edition</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Courier New', Courier, monospace;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON BOUNCE: ULTIMATE EDITION</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #020008;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
 
-    body {
-      background-color: #050508;
-      color: #00ffcc;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow-x: hidden;
-    }
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 50px rgba(255, 0, 127, 0.6), 0 0 100px rgba(0, 242, 254, 0.4);
+            border-radius: 16px;
+        }
 
-    /* Classic Top HUD Navigation */
-    #game-ui {
-      width: 100%;
-      padding: 12px 25px;
-      background: #0a0a12;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 3px solid #00ffcc;
-      box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
+        canvas {
+            border: 4px solid #ff007f;
+            background: radial-gradient(circle, #100a26 0%, #050212 70%, #000000 100%);
+            border-radius: 12px;
+            display: block;
+        }
 
-    .hud-buttons {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 1, 15, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            z-index: 10;
+        }
 
-    .nav-btn, .action-btn {
-      background: #00ffcc;
-      color: #050508;
-      border: 2px solid #00ffcc;
-      padding: 8px 14px;
-      font-weight: bold;
-      font-family: 'Courier New', Courier, monospace;
-      cursor: pointer;
-      border-radius: 0px;
-      text-transform: uppercase;
-      transition: 0.1s linear;
-    }
+        h1 {
+            font-size: 24px;
+            margin: 0 0 4px 0;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #ff007f, #00f2fe, #ffe600, #7928ca);
+            background-size: 300% 300%;
+            animation: gradientShift 6s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 25px rgba(0, 242, 254, 0.8);
+            letter-spacing: 2px;
+            text-align: center;
+        }
 
-    .nav-btn:hover, .action-btn:hover {
-      background: #ff0055;
-      color: #fff;
-      border-color: #ff0055;
-      box-shadow: 0 0 10px #ff0055;
-    }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-    .action-btn.equipped {
-      background: #111;
-      color: #00ffcc;
-      border: 2px solid #00ffcc;
-      cursor: default;
-    }
+        p {
+            color: #a0a0c0;
+            font-size: 11px;
+            margin: 0 0 8px 0;
+            text-align: center;
+        }
 
-    .level-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #000;
-      padding: 5px 12px;
-      border: 2px solid #00ffcc;
-    }
+        .currency-display {
+            color: #ffe600;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(255, 230, 0, 0.6);
+        }
 
-    .xp-bar-bg {
-      width: 90px;
-      height: 10px;
-      background: #222;
-      border: 1px solid #00ffcc;
-      overflow: hidden;
-    }
+        .skin-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin: 6px 0 10px 0;
+            width: 90%;
+            max-height: 180px;
+            overflow-y: auto;
+        }
 
-    .xp-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: #00ffcc;
-      transition: width 0.2s ease;
-    }
+        .skin-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 2px;
+            border: 2px solid #221545;
+            background: #0d061f;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-    /* Classic Arena Styling */
-    #game-canvas-container {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        .skin-card:hover {
+            transform: translateY(-2px);
+            border-color: #00f2fe;
+        }
 
-    .pvp-hud {
-      width: 700px;
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
+        .skin-card.equipped {
+            border-color: #ffe600;
+            box-shadow: 0 0 12px #ffe600;
+            background: #1a0f3d;
+        }
 
-    .health-bar-container {
-      width: 240px;
-      height: 16px;
-      background: #000;
-      border: 2px solid #00ffcc;
-      overflow: hidden;
-      margin-top: 4px;
-    }
+        .skin-name {
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #fff;
+        }
 
-    .health-fill {
-      height: 100%;
-      width: 100%;
-      transition: width 0.1s linear;
-    }
+        .skin-status {
+            font-size: 8px;
+            margin-top: 2px;
+            color: #00f2fe;
+        }
 
-    #player-health-fill { background: #00ffcc; }
-    #enemy-health-fill { background: #ff0055; }
+        .mode-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 85%;
+        }
 
-    canvas {
-      border: 4px solid #00ffcc;
-      background: #000000;
-      box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
-      image-rendering: pixelated;
-    }
+        .btn {
+            background: linear-gradient(45deg, #ff007f, #7928ca);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(255, 0, 127, 0.4);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            text-align: center;
+        }
 
-    /* Modal System - Classic Style */
-    .modal {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 88%;
-      max-width: 950px;
-      max-height: 85vh;
-      background: #0a0a12;
-      border: 3px solid #00ffcc;
-      padding: 25px;
-      overflow-y: auto;
-      z-index: 100;
-      box-shadow: 0 0 25px rgba(0, 255, 204, 0.5);
-    }
+        .btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 18px rgba(0, 242, 254, 0.8);
+            background: linear-gradient(45deg, #00f2fe, #ffe600);
+            color: #060112;
+        }
 
-    .hidden { display: none !important; }
+        .input-box {
+            padding: 8px;
+            font-size: 12px;
+            border-radius: 12px;
+            border: 2px solid #00f2fe;
+            background: #110826;
+            color: #ffe600;
+            text-align: center;
+            font-weight: bold;
+            letter-spacing: 1px;
+            width: 85%;
+            margin-bottom: 8px;
+            outline: none;
+        }
 
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 2px dashed #00ffcc;
-      padding-bottom: 10px;
-    }
+        .lobby-list {
+            width: 85%;
+            height: 100px;
+            background: #090417;
+            border: 2px solid #331c63;
+            border-radius: 10px;
+            overflow-y: auto;
+            margin-bottom: 8px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
 
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
-    }
+        .lobby-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #160c33;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            border: 1px solid #00f2fe;
+        }
 
-    .card {
-      background: #000;
-      border: 2px solid #00ffcc;
-      padding: 15px;
-      text-align: center;
-    }
+        .lobby-item button {
+            background: #00ff66;
+            color: #000;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 10px;
+        }
 
-    .card.unlocked {
-      border-color: #ffd700;
-      background: #111000;
-    }
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 80%;
+            margin: 6px 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: #00f2fe;
+        }
 
-    .quest-card {
-      background: #000;
-      border-left: 6px solid #00ffcc;
-      border-right: 1px solid #00ffcc;
-      border-top: 1px solid #00ffcc;
-      border-bottom: 1px solid #00ffcc;
-      padding: 15px;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 242, 254, 0.2);
+            border-top: 4px solid #00f2fe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
 
-    .shop-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-    .rarity-tag {
-      font-size: 0.75rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      display: inline-block;
-    }
+        .progress-bar-bg {
+            width: 70%;
+            height: 8px;
+            background: #110826;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #7928ca;
+        }
 
-    .rarity-legendary { color: #ffd700; }
-    .rarity-epic { color: #ff00ff; }
-    .rarity-rare { color: #00ffcc; }
-  </style>
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff007f, #00f2fe);
+            transition: width 0.1s ease;
+        }
+
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: bold;
+            color: #00f2fe;
+            text-shadow: 0 0 8px rgba(0, 242, 254, 0.8);
+            pointer-events: none;
+        }
+
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
 
-  <!-- Top Navigation HUD -->
-  <div id="game-ui">
-    <div class="hud-buttons">
-      <button class="nav-btn" onclick="openModal('modes-modal')">Game Modes</button>
-      <button class="nav-btn" onclick="openModal('shop-modal')">Item Shop</button>
-      <button class="nav-btn" onclick="openModal('skills-modal')">Skill Tree</button>
-      <button class="nav-btn" onclick="openModal('quests-modal')">Goals</button>
-      <button class="nav-btn" onclick="openModal('achieve-modal')">Trophies</button>
-      <button class="nav-btn" onclick="openModal('stats-modal')">Stats</button>
-      <button class="nav-btn" onclick="openModal('settings-modal')">Settings</button>
-    </div>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="480" height="580"></canvas>
 
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <div class="level-container">
-        <span style="font-weight: bold; color: #00ffcc;">LVL <span id="level-display">1</span></span>
-        <div class="xp-bar-bg">
-          <div id="xp-fill" class="xp-bar-fill"></div>
+        <div id="ui" class="hidden">
+            <div>SCORE: <span id="score-ui">0</span> | COINS: <span id="coins-ui">0</span></div>
+            <div>MODE: <span id="mode-ui" style="color:#ff007f;">CLASSIC</span></div>
         </div>
-      </div>
-      <h2>COINS: <span id="coin-count" style="color: #ffd700;">5000</span></h2>
-    </div>
-  </div>
 
-  <!-- Arena Container -->
-  <div id="game-canvas-container">
-    <div class="pvp-hud">
-      <div>
-        <span>PLAYER (<span id="player-skin-name">Renegade</span>) | PET: <span id="player-pet-name" style="color:#00ffcc;">NONE</span></span>
-        <div class="health-bar-container">
-          <div id="player-health-fill" class="health-fill"></div>
-        </div>
-      </div>
-      <div style="text-align: right;">
-        <span id="enemy-title">TARGET AI</span>
-        <div class="health-bar-container">
-          <div id="enemy-health-fill" class="health-fill"></div>
-        </div>
-      </div>
-    </div>
-
-    <canvas id="gameCanvas" width="700" height="340"></canvas>
-    <p style="margin-top: 10px; font-size: 0.85rem; color: #888;">
-      <b>WASD / ARROWS</b> MOVE | <b>SPACE</b> ATTACK | <b>E</b> BLAST (CD: <span id="cd-timer">READY</span>) | <b>Q</b> ULTIMATE (CD: <span id="ult-cd-timer">READY</span>)
-    </p>
-  </div>
-
-  <!-- Game Modes Modal -->
-  <div id="modes-modal" class="modal hidden">
-    <div class="modal-header">
-      <h2 style="color: #00ffcc;">SELECT GAME MODE</h2>
-      <button class="action-btn" onclick="closeModal('modes-modal')">X</button>
-    </div>
-    <div class="grid-container">
-      <div class="card">
-        <h3>PvP Arena</h3>
-        <p style="margin: 8px 0; font-size: 0.85rem;">Classic 1v1 Arena Combat!</p>
-        <button class="action-btn" onclick="selectMode('PvP Arena')">SELECT</button>
-      </div>
-      <div class="card">
-        <h3>Mega Boss Hunt</h3>
-        <p style="margin: 8px 0; font-size: 0.85rem;">Battle Heavy Boss Target!</p>
-        <button class="action-btn" onclick="selectMode('Boss Hunt')">SELECT</button>
-      </div>
-      <div class="card">
-        <h3>Endless Survival</h3>
-        <p style="margin: 8px 0; font-size: 0.85rem;">Outlast Endless Waves!</p>
-        <button class="action-btn" onclick="selectMode('Survival')">SELECT</button>
-      </div>
-      <div class="card">
-        <h3>Solo Freeplay</h3>
-        <p style="margin: 8px 0; font-size: 0.85rem;">Practice & Test Loadouts.</p>
-        <button class="action-btn" onclick="selectMode('Solo Freeplay')">SELECT</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Skill Tree Modal -->
-  <div id="skills-modal" class="modal hidden">
-    <div class="modal-header">
-      <h2 style="color: #00ffcc;">SKILL UPGRADES</h2>
-      <button class="action-btn" onclick="closeModal('skills-modal')">X</button>
-    </div>
-    <p>AVAILABLE POINTS: <b id="skill-points-display" style="color:#ffd700;">0</b></p>
-    <div class="grid-container">
-      <div class="card">
-        <h3>ATTACK POWER</h3>
-        <p style="margin: 8px 0; font-size: 0.85rem;">+5 Damage per point.</p>
-        <p>LVL: <b id="skill-atk-lvl">0</b></p>
-        <button class="action-btn" style="margin-top:10px;" onclick="upgradeSkill('atk')">UPGRADE (+1 SP)</button>
-      </div>
-      <div class="card">
-        <h3>MAX HEALTH</h3>
-        <p style="margin: 8px 0; font-size: 0.85rem;">+20 Max HP per point.</p>
-        <p>LVL: <b id="skill-hp-lvl">0</b></p>
-        <button class="action-btn" style="margin-top:10px;" onclick="upgradeSkill('hp')">UPGRADE (+1 SP)</button>
-      </div>
-      <div class="card">
-        <h3>SPEED BOOST</h3>
-        <p style="margin: 8px 0; font-size: 0.85rem;">Increase Movement Speed.</p>
-        <p>LVL: <b id="skill-spd-lvl">0</b></p>
-        <button class="action-btn" style="margin-top:10px;" onclick="upgradeSkill('spd')">UPGRADE (+1 SP)</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Item Shop Modal -->
-  <div id="shop-modal" class="modal hidden">
-    <div class="modal-header">
-      <h2 style="color: #00ffcc;">ITEM SHOP</h2>
-      <button class="action-btn" onclick="closeModal('shop-modal')">X</button>
-    </div>
-    <div class="shop-tabs">
-      <button class="nav-btn" onclick="switchShopTab('skins')">Skins</button>
-      <button class="nav-btn" onclick="switchShopTab('weapons')">Weapons</button>
-      <button class="nav-btn" onclick="switchShopTab('pets')">Pets / Drones</button>
-    </div>
-    <div id="shop-items-container" class="grid-container"></div>
-  </div>
-
-  <!-- Goals Modal -->
-  <div id="quests-modal" class="modal hidden">
-    <div class="modal-header">
-      <h2 style="color: #00ffcc;">GOALS & REWARDS</h2>
-      <button class="action-btn" onclick="closeModal('quests-modal')">X</button>
-    </div>
-    <div id="quests-container"></div>
-  </div>
-
-  <!-- Trophies Modal -->
-  <div id="achieve-modal" class="modal hidden">
-    <div class="modal-header">
-      <h2 style="color: #00ffcc;">TROPHY ROOM</h2>
-      <button class="action-btn" onclick="closeModal('achieve-modal')">X</button>
-    </div>
-    <div id="achieve-container" class="grid-container"></div>
-  </div>
-
-  <!-- Stats Modal -->
-  <div id="stats-modal" class="modal hidden">
-    <div class="modal-header">
-      <h2 style="color: #00ffcc;">CAREER STATS</h2>
-      <button class="action-btn" onclick="closeModal('stats-modal')">X</button>
-    </div>
-    <div class="grid-container">
-      <div class="card"><h3>PvP WINS</h3><h2 id="stat-wins" style="color:#00ffcc; margin-top:10px;">0</h2></div>
-      <div class="card"><h3>BOSS KILLS</h3><h2 id="stat-bosses" style="color:#ffd700; margin-top:10px;">0</h2></div>
-      <div class="card"><h3>TOTAL KILLS</h3><h2 id="stat-kills" style="color:#ff0055; margin-top:10px;">0</h2></div>
-      <div class="card"><h3>CHESTS OPENED</h3><h2 id="stat-chests" style="color:#ff00ff; margin-top:10px;">0</h2></div>
-    </div>
-  </div>
-
-  <!-- Settings Modal -->
-  <div id="settings-modal" class="modal hidden">
-    <div class="modal-header">
-      <h2 style="color: #00ffcc;">SETTINGS</h2>
-      <button class="action-btn" onclick="closeModal('settings-modal')">X</button>
-    </div>
-    <div style="margin: 20px 0;">
-      <button class="action-btn" style="background: #ff0055; color: white; border-color: #ff0055;" onclick="resetData()">CLEAR DATA & RESTART</button>
-    </div>
-  </div>
-
-  <script>
-    // Classic Database Definitions
-    const skins = [
-      { id: 's1', name: 'Tuff Renegade', price: 500, rarity: 'rare', color: '#00ffcc' },
-      { id: 's2', name: 'Phantom Striker', price: 600, rarity: 'rare', color: '#ff0055' },
-      { id: 's3', name: 'Vortex Assassin', price: 750, rarity: 'epic', color: '#ff00ff' },
-      { id: 's4', name: 'Mecha Titan', price: 1000, rarity: 'legendary', color: '#ffd700' }
-    ];
-
-    const weapons = [
-      { id: 'w1', name: 'Default Saber', price: 0, rarity: 'rare', dmg: 15 },
-      { id: 'w2', name: 'Plasma Rifle', price: 800, rarity: 'epic', dmg: 25 },
-      { id: 'w3', name: 'Cyber Blade', price: 1200, rarity: 'legendary', dmg: 35 },
-      { id: 'w4', name: 'Hyper Cannon', price: 2000, rarity: 'legendary', dmg: 50 }
-    ];
-
-    const pets = [
-      { id: 'p1', name: 'Cyber Drone', price: 1000, rarity: 'epic', color: '#00ffcc', dmg: 4 },
-      { id: 'p2', name: 'Phoenix Flame', price: 1800, rarity: 'legendary', color: '#ff0055', dmg: 8 },
-      { id: 'p3', name: 'Void Orb', price: 2500, rarity: 'legendary', color: '#ff00ff', dmg: 12 }
-    ];
-
-    const quests = [
-      { id: 'q1', title: 'Play 1 Match', rewardType: 'coins', rewardVal: 300 },
-      { id: 'q2', title: 'Win a PvP Round', rewardType: 'chest', rewardVal: 'Gold Chest' },
-      { id: 'q3', title: 'Defeat a Mega Boss', rewardType: 'chest', rewardVal: 'Boss Chest' }
-    ];
-
-    const achievements = [
-      { id: 'a1', title: 'First Steps', desc: 'Select any game mode.' },
-      { id: 'a2', title: 'Big Spender', desc: 'Buy an item from shop.' },
-      { id: 'a3', title: 'PvP Gladiator', desc: 'Win a PvP Arena battle.' },
-      { id: 'a4', title: 'Boss Slayer', desc: 'Defeat the Mega Boss.' }
-    ];
-
-    // State Handler
-    let playerData = JSON.parse(localStorage.getItem('tuff_game_classic_data')) || {
-      coins: 5000,
-      level: 1,
-      xp: 0,
-      skillPoints: 0,
-      skills: { atk: 0, hp: 0, spd: 0 },
-      inventory: ['s1', 'w1'],
-      equippedSkin: 'Tuff Renegade',
-      equippedColor: '#00ffcc',
-      equippedWeapon: 'Default Saber',
-      weaponDmg: 15,
-      equippedPet: null,
-      petDmg: 0,
-      petColor: '#fff',
-      selectedMode: 'PvP Arena',
-      completedQuests: [],
-      unlockedAchieve: [],
-      stats: { wins: 0, bosses: 0, kills: 0, chests: 0 }
-    };
-
-    let activeShopTab = 'skins';
-
-    window.addEventListener('load', () => {
-      updateUI();
-      renderShop();
-      renderQuests();
-      renderAchievements();
-      initCanvasGame();
-    });
-
-    function openModal(id) {
-      document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-
-    function saveProgress() {
-      localStorage.setItem('tuff_game_classic_data', JSON.stringify(playerData));
-      updateUI();
-    }
-
-    function updateUI() {
-      document.getElementById('coin-count').innerText = playerData.coins;
-      document.getElementById('level-display').innerText = playerData.level;
-      document.getElementById('player-skin-name').innerText = playerData.equippedSkin;
-      document.getElementById('player-pet-name').innerText = playerData.equippedPet || 'NONE';
-
-      document.getElementById('skill-points-display').innerText = playerData.skillPoints;
-      document.getElementById('skill-atk-lvl').innerText = playerData.skills.atk;
-      document.getElementById('skill-hp-lvl').innerText = playerData.skills.hp;
-      document.getElementById('skill-spd-lvl').innerText = playerData.skills.spd;
-
-      document.getElementById('stat-wins').innerText = playerData.stats.wins;
-      document.getElementById('stat-bosses').innerText = playerData.stats.bosses;
-      document.getElementById('stat-kills').innerText = playerData.stats.kills;
-      document.getElementById('stat-chests').innerText = playerData.stats.chests;
-
-      const xpNeeded = playerData.level * 100;
-      const xpPercentage = (playerData.xp / xpNeeded) * 100;
-      document.getElementById('xp-fill').style.width = `${xpPercentage}%`;
-    }
-
-    function upgradeSkill(type) {
-      if (playerData.skillPoints > 0) {
-        playerData.skillPoints--;
-        playerData.skills[type]++;
-        saveProgress();
-      } else alert("Not enough Skill Points!");
-    }
-
-    function unlockAchievement(id) {
-      if (!playerData.unlockedAchieve.includes(id)) {
-        playerData.unlockedAchieve.push(id);
-        const ach = achievements.find(a => a.id === id);
-        alert(`🏆 Achievement Unlocked: ${ach.title}!`);
-        saveProgress();
-        renderAchievements();
-      }
-    }
-
-    function selectMode(modeName) {
-      playerData.selectedMode = modeName;
-      document.getElementById('enemy-title').innerText = modeName === 'Boss Hunt' ? 'MEGA BOSS' : 'TARGET AI';
-      unlockAchievement('a1');
-      saveProgress();
-      closeModal('modes-modal');
-      resetCombat();
-    }
-
-    // Classic Graphic Game Engine
-    let playerX = 100, playerY = 150;
-    let petX = 80, petY = 150;
-    let enemyX = 500, enemyY = 150, enemySize = 30;
-    let playerHealth = 100, maxPlayerHp = 100, enemyHealth = 100, maxEnemyHealth = 100;
-    let abilityCooldown = false, ultCooldown = false;
-    let floatingTexts = [];
-    const keys = {};
-
-    window.addEventListener('keydown', e => {
-      keys[e.key.toLowerCase()] = true;
-      if (e.code === 'Space') attackEnemy();
-      if (e.key.toLowerCase() === 'e') triggerSpecialAbility();
-      if (e.key.toLowerCase() === 'q') triggerUltimate();
-    });
-    window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-
-    function resetCombat() {
-      maxPlayerHp = 100 + (playerData.skills.hp * 20);
-      playerHealth = maxPlayerHp;
-      maxEnemyHealth = playerData.selectedMode === 'Boss Hunt' ? 350 : 100;
-      enemyHealth = maxEnemyHealth;
-      enemySize = playerData.selectedMode === 'Boss Hunt' ? 50 : 30;
-      playerX = 100; playerY = 150;
-      enemyX = 500; enemyY = 150;
-      document.getElementById('player-health-fill').style.width = '100%';
-      document.getElementById('enemy-health-fill').style.width = '100%';
-    }
-
-    function attackEnemy() {
-      if (playerData.selectedMode === 'Solo Freeplay') return;
-      if (Math.hypot(playerX - enemyX, playerY - enemyY) < enemySize + 30) {
-        const damage = playerData.weaponDmg + (playerData.skills.atk * 5);
-        enemyHealth = Math.max(0, enemyHealth - damage);
-        floatingTexts.push({ text: `-${damage}`, x: enemyX, y: enemyY - 10, alpha: 1, color: '#ffd700' });
-        document.getElementById('enemy-health-fill').style.width = `${(enemyHealth / maxEnemyHealth) * 100}%`;
-        if (enemyHealth <= 0) handleEnemyDefeat();
-      }
-    }
-
-    function triggerSpecialAbility() {
-      if (abilityCooldown || playerData.selectedMode === 'Solo Freeplay') return;
-      abilityCooldown = true;
-      document.getElementById('cd-timer').innerText = '5s';
-
-      const damage = (playerData.weaponDmg + (playerData.skills.atk * 5)) * 2;
-      enemyHealth = Math.max(0, enemyHealth - damage);
-      floatingTexts.push({ text: `💥 BLAST -${damage}`, x: enemyX, y: enemyY - 20, alpha: 1, color: '#ff0055' });
-      document.getElementById('enemy-health-fill').style.width = `${(enemyHealth / maxEnemyHealth) * 100}%`;
-
-      if (enemyHealth <= 0) handleEnemyDefeat();
-
-      let cd = 5;
-      const timer = setInterval(() => {
-        cd--;
-        document.getElementById('cd-timer').innerText = `${cd}s`;
-        if (cd <= 0) {
-          clearInterval(timer);
-          abilityCooldown = false;
-          document.getElementById('cd-timer').innerText = 'READY';
-        }
-      }, 1000);
-    }
-
-    function triggerUltimate() {
-      if (ultCooldown || playerData.selectedMode === 'Solo Freeplay') return;
-      ultCooldown = true;
-      document.getElementById('ult-cd-timer').innerText = '10s';
-
-      const damage = (playerData.weaponDmg + (playerData.skills.atk * 5)) * 3.5;
-      enemyHealth = Math.max(0, enemyHealth - damage);
-      floatingTexts.push({ text: `⚡ ULTIMATE -${damage}`, x: enemyX, y: enemyY - 30, alpha: 1, color: '#00ffcc' });
-      document.getElementById('enemy-health-fill').style.width = `${(enemyHealth / maxEnemyHealth) * 100}%`;
-
-      if (enemyHealth <= 0) handleEnemyDefeat();
-
-      let cd = 10;
-      const timer = setInterval(() => {
-        cd--;
-        document.getElementById('ult-cd-timer').innerText = `${cd}s`;
-        if (cd <= 0) {
-          clearInterval(timer);
-          ultCooldown = false;
-          document.getElementById('ult-cd-timer').innerText = 'READY';
-        }
-      }, 1000);
-    }
-
-    function handleEnemyDefeat() {
-      if (playerData.selectedMode === 'Boss Hunt') {
-        alert("🎉 MEGA BOSS DEFEATED!");
-        playerData.stats.bosses++;
-        unlockAchievement('a4');
-      } else {
-        alert("💥 Victory!");
-        playerData.stats.wins++;
-        unlockAchievement('a3');
-      }
-      playerData.stats.kills++;
-      playerData.coins += 350;
-      playerData.xp += 85;
-
-      if (playerData.xp >= playerData.level * 100) {
-        playerData.xp -= playerData.level * 100;
-        playerData.level++;
-        playerData.skillPoints++;
-        alert(`⭐ LEVEL UP! Level ${playerData.level}! +1 Skill Point.`);
-      }
-
-      saveProgress();
-      resetCombat();
-    }
-
-    function initCanvasGame() {
-      const canvas = document.getElementById('gameCanvas');
-      const ctx = canvas.getContext('2d');
-      let petTimer = 0;
-
-      function gameLoop() {
-        const speed = 4 + (playerData.skills.spd * 0.8);
-        if (keys['w'] || keys['arrowup']) playerY = Math.max(0, playerY - speed);
-        if (keys['s'] || keys['arrowdown']) playerY = Math.min(canvas.height - 30, playerY + speed);
-        if (keys['a'] || keys['arrowleft']) playerX = Math.max(0, playerX - speed);
-        if (keys['d'] || keys['arrowright']) playerX = Math.min(canvas.width - 30, playerX + speed);
-
-        petX += (playerX - 25 - petX) * 0.1;
-        petY += (playerY - 15 - petY) * 0.1;
-
-        if (playerData.equippedPet && playerData.selectedMode !== 'Solo Freeplay' && enemyHealth > 0) {
-          petTimer++;
-          if (petTimer > 90) {
-            petTimer = 0;
-            const pdmg = playerData.petDmg;
-            enemyHealth = Math.max(0, enemyHealth - pdmg);
-            floatingTexts.push({ text: `🐾 -${pdmg}`, x: enemyX, y: enemyY - 10, alpha: 1, color: playerData.petColor });
-            document.getElementById('enemy-health-fill').style.width = `${(enemyHealth / maxEnemyHealth) * 100}%`;
-            if (enemyHealth <= 0) handleEnemyDefeat();
-          }
-        }
-
-        if (playerData.selectedMode !== 'Solo Freeplay' && enemyHealth > 0) {
-          if (enemyX > playerX + 40) enemyX -= 1.2;
-          if (enemyX < playerX + 40) enemyX += 1.2;
-
-          if (Math.hypot(playerX - enemyX, playerY - enemyY) < 40 && Math.random() < 0.02) {
-            playerHealth = Math.max(0, playerHealth - 8);
-            document.getElementById('player-health-fill').style.width = `${(playerHealth / maxPlayerHp) * 100}%`;
-            if (playerHealth <= 0) {
-              alert("❌ Defeat!");
-              resetCombat();
-            }
-          }
-        }
-
-        // Retro Canvas Drawing
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Grid Background Overlay (Original Classic Visual)
-        ctx.strokeStyle = '#051d18';
-        ctx.lineWidth = 1;
-        for (let x = 0; x < canvas.width; x += 30) {
-          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-        }
-        for (let y = 0; y < canvas.height; y += 30) {
-          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-        }
-
-        // Mode Display Text
-        ctx.fillStyle = '#00ffcc';
-        ctx.font = 'bold 14px Courier New';
-        ctx.fillText(`MODE: ${playerData.selectedMode.toUpperCase()}`, 15, 25);
-
-        // Classic Square Player Entity
-        ctx.fillStyle = playerData.equippedColor || '#00ffcc';
-        ctx.fillRect(playerX, playerY, 30, 30);
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(playerX, playerY, 30, 30);
-
-        // Classic Pet Circle
-        if (playerData.equippedPet) {
-          ctx.fillStyle = playerData.petColor || '#fff';
-          ctx.beginPath();
-          ctx.arc(petX, petY, 7, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Classic Red Enemy Entity
-        if (playerData.selectedMode !== 'Solo Freeplay') {
-          ctx.fillStyle = playerData.selectedMode === 'Boss Hunt' ? '#ffd700' : '#ff0055';
-          ctx.fillRect(enemyX, enemyY, enemySize, enemySize);
-          ctx.strokeStyle = '#ffffff';
-          ctx.strokeRect(enemyX, enemyY, enemySize, enemySize);
-        }
-
-        // Floating Damage Indicators
-        floatingTexts.forEach((ft, index) => {
-          ctx.fillStyle = ft.color || '#ffd700';
-          ctx.font = 'bold 14px Courier New';
-          ctx.fillText(ft.text, ft.x, ft.y);
-          ft.y -= 0.7;
-          ft.alpha -= 0.02;
-          if (ft.alpha <= 0) floatingTexts.splice(index, 1);
-        });
-
-        requestAnimationFrame(gameLoop);
-      }
-      gameLoop();
-    }
-
-    // Modal UI Helpers
-    function renderAchievements() {
-      const container = document.getElementById('achieve-container');
-      container.innerHTML = achievements.map(a => {
-        const isUnlocked = playerData.unlockedAchieve.includes(a.id);
-        return `
-          <div class="card ${isUnlocked ? 'unlocked' : ''}">
-            <h4 style="color:${isUnlocked ? '#ffd700' : '#00ffcc'};">${isUnlocked ? '🏆 ' : ''}${a.title}</h4>
-            <p style="font-size:0.8rem; margin-top:5px; color:#aaa;">${a.desc}</p>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderQuests() {
-      const container = document.getElementById('quests-container');
-      container.innerHTML = quests.map(q => {
-        const isDone = playerData.completedQuests.includes(q.id);
-        return `
-          <div class="quest-card">
-            <div>
-              <h4>${q.title}</h4>
-              <p style="color:#aaa;">Reward: ${q.rewardType === 'coins' ? `+${q.rewardVal} Coins` : `🎁 ${q.rewardVal}`}</p>
+        <!-- LOADING SCREEN -->
+        <div id="loading-screen" class="screen hidden">
+            <h1>LOADING MATCH</h1>
+            <div class="spinner"></div>
+            <div class="progress-bar-bg">
+                <div id="loading-bar" class="progress-bar-fill"></div>
             </div>
-            <button class="action-btn ${isDone ? 'equipped' : ''}" 
-                    onclick="claimQuest('${q.id}', '${q.rewardType}', '${q.rewardVal}')" 
-                    ${isDone ? 'disabled' : ''}>
-              ${isDone ? 'CLAIMED' : 'CLAIM'}
-            </button>
-          </div>
-        `;
-      }).join('');
-    }
+            <p id="loading-text" style="margin-top: 10px; color: #ffe600;">INITIALIZING HYPER DRIVE...</p>
+        </div>
 
-    function claimQuest(id, type, val) {
-      playerData.completedQuests.push(id);
-      if (type === 'coins') playerData.coins += parseInt(val);
-      else {
-        playerData.coins += 1500;
-        playerData.stats.chests++;
-      }
-      saveProgress();
-      renderQuests();
-    }
+        <!-- MAIN MENU -->
+        <div id="title-screen" class="screen">
+            <h1>NEON BOUNCE</h1>
+            <div class="currency-display">💎 <span id="menu-coins">0</span> COINS</div>
 
-    function switchShopTab(tab) {
-      activeShopTab = tab;
-      renderShop();
-    }
+            <div class="mode-container">
+                <button class="btn" id="btn-sp-start">🎮 CLASSIC BRICKS</button>
+                <button class="btn" id="btn-survival-start" style="background: linear-gradient(45deg, #ff0055, #ff5500);">🔥 SURVIVAL MODE</button>
+                <button class="btn" id="btn-speed-start" style="background: linear-gradient(45deg, #e11d48, #fbbf24);">⚡ SPEED DEMON</button>
+                <button class="btn" id="btn-boss-start" style="background: linear-gradient(45deg, #9333ea, #4f46e5);">👾 BOSS BATTLE</button>
+                <button class="btn" id="btn-pvp-menu" style="background: linear-gradient(45deg, #00f2fe, #4facfe);">🌐 PVP LOBBIES</button>
+                <button class="btn" id="btn-shop-menu" style="background: linear-gradient(45deg, #ffe600, #ff007f); color: #000;">🛒 PADDLE SHOP</button>
+                <button class="btn" id="btn-settings-menu" style="background: #221545;">⚙️ SETTINGS</button>
+            </div>
+        </div>
 
-    function renderShop() {
-      const container = document.getElementById('shop-items-container');
-      let items = skins;
-      if (activeShopTab === 'weapons') items = weapons;
-      if (activeShopTab === 'pets') items = pets;
+        <!-- SHOP SCREEN -->
+        <div id="shop-screen" class="screen hidden">
+            <h1>PADDLE SHOP</h1>
+            <div class="currency-display">AVAILABLE COINS: 💎 <span id="shop-coins">0</span></div>
 
-      container.innerHTML = items.map(item => {
-        const isOwned = playerData.inventory.includes(item.id);
-        const isEquipped = playerData.equippedSkin === item.name || playerData.equippedWeapon === item.name || playerData.equippedPet === item.name;
+            <div class="skin-grid" id="shop-grid"></div>
 
-        let btn = isEquipped ? `<button class="action-btn equipped">EQUIPPED</button>` :
-                  isOwned ? `<button class="action-btn" onclick="equipShopItem('${item.id}', '${item.name}', '${activeShopTab}', '${item.color || ''}', ${item.dmg || 0})">EQUIP</button>` :
-                  `<button class="action-btn" onclick="buyShopItem('${item.id}', '${item.name}', ${item.price}, '${activeShopTab}', '${item.color || ''}', ${item.dmg || 0})">BUY</button>`;
+            <button class="btn" id="btn-back-shop" style="margin-top:10px; width:60%; background: #333;">BACK TO MENU</button>
+        </div>
 
-        return `
-          <div class="card">
-            <span class="rarity-tag rarity-${item.rarity}">${item.rarity}</span>
-            <h4>${item.name}</h4>
-            <p style="margin: 6px 0;">${isOwned ? 'OWNED' : item.price + ' COINS'}</p>
-            ${btn}
-          </div>
-        `;
-      }).join('');
-    }
+        <!-- PVP SCREEN -->
+        <div id="pvp-screen" class="screen hidden">
+            <h1>PVP LOBBY ROOMS</h1>
+            
+            <input type="text" id="create-lobby-name" class="input-box" placeholder="ENTER YOUR LOBBY NAME..." maxlength="15">
+            <button class="btn" id="btn-create-lobby" style="width:85%; margin-bottom:8px;">🔑 CREATE NEW LOBBY</button>
+            
+            <p style="color:#00f2fe; font-weight:bold; margin-bottom:4px;">OPEN LOBBIES:</p>
+            <div id="lobby-list-container" class="lobby-list">
+                <div style="text-align:center; color:#666; font-size:10px; margin-top:35px;">Create a room or enter a Lobby ID below</div>
+            </div>
 
-    function buyShopItem(id, name, price, type, color, dmg) {
-      if (playerData.coins >= price) {
-        playerData.coins -= price;
-        playerData.inventory.push(id);
-        equipShopItem(id, name, type, color, dmg);
-        unlockAchievement('a2');
-      } else alert("Not enough coins!");
-    }
+            <input type="text" id="direct-code-input" class="input-box" placeholder="OR ENTER LOBBY ID..." maxlength="6">
+            <button class="btn" id="btn-join-direct" style="width:85%; background: linear-gradient(45deg, #00ff66, #00f2fe);">⚡ JOIN BY ID</button>
+            
+            <p id="lobby-status" style="margin-top:6px; color:#ffe600; font-weight:bold;"></p>
+            <button class="btn" id="btn-back-pvp" style="margin-top:4px; background: #333;">BACK</button>
+        </div>
 
-    function equipShopItem(id, name, type, color, dmg) {
-      if (type === 'skins') {
-        playerData.equippedSkin = name;
-        if (color) playerData.equippedColor = color;
-      } else if (type === 'weapons') {
-        playerData.equippedWeapon = name;
-        playerData.weaponDmg = dmg;
-      } else if (type === 'pets') {
-        playerData.equippedPet = name;
-        playerData.petDmg = dmg;
-        playerData.petColor = color;
-      }
-      saveProgress();
-      renderShop();
-    }
+        <!-- SETTINGS SCREEN -->
+        <div id="settings-screen" class="screen hidden">
+            <h1>SETTINGS</h1>
+            
+            <div class="setting-row">
+                <span>SOUND EFFECTS</span>
+                <input type="checkbox" id="setting-sfx" checked>
+            </div>
+            
+            <div class="setting-row">
+                <span>SYNTH MUSIC</span>
+                <input type="checkbox" id="setting-music" checked>
+            </div>
 
-    function resetData() {
-      if (confirm("Reset game data to defaults?")) {
-        localStorage.clear();
-        location.reload();
-      }
-    }
-  </script>
+            <div class="setting-row">
+                <span>SCREEN SHAKE</span>
+                <input type="checkbox" id="setting-shake" checked>
+            </div>
+
+            <button class="btn" id="btn-back-settings" style="margin-top:20px; width:60%; background: #333;">SAVE & BACK</button>
+        </div>
+
+        <!-- PAUSE SCREEN -->
+        <div id="pause-screen" class="screen hidden">
+            <h1>GAME PAUSED</h1>
+            <p>PRESS 'P' OR 'ESC' TO UNPAUSE</p>
+            <button class="btn" id="btn-resume" style="margin-bottom: 10px;">RESUME</button>
+            <button class="btn" id="btn-pause-quit" style="background: #333;">QUIT TO MENU</button>
+        </div>
+
+        <!-- GAME OVER SCREEN -->
+        <div id="game-over-screen" class="screen hidden">
+            <h1 id="over-title">GAME OVER</h1>
+            <p id="winner-text">MATCH FINISHED</p>
+            <button class="btn" id="btn-quit-menu">MAIN MENU</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const canvas = document.getElementById("gameCanvas");
+            const ctx = canvas.getContext("2d");
+
+            const titleScreen = document.getElementById("title-screen");
+            const shopScreen = document.getElementById("shop-screen");
+            const pvpScreen = document.getElementById("pvp-screen");
+            const settingsScreen = document.getElementById("settings-screen");
+            const loadingScreen = document.getElementById("loading-screen");
+            const pauseScreen = document.getElementById("pause-screen");
+            const gameOverScreen = document.getElementById("game-over-screen");
+            const ui = document.getElementById("ui");
+
+            const scoreUI = document.getElementById("score-ui");
+            const coinsUI = document.getElementById("coins-ui");
+            const menuCoins = document.getElementById("menu-coins");
+            const shopCoins = document.getElementById("shop-coins");
+            const modeUI = document.getElementById("mode-ui");
+            const lobbyStatus = document.getElementById("lobby-status");
+            const lobbyListContainer = document.getElementById("lobby-list-container");
+            const loadingBar = document.getElementById("loading-bar");
+            const loadingText = document.getElementById("loading-text");
+            const shopGrid = document.getElementById("shop-grid");
+
+            // Game State & Economy
+            let coins = 0;
+            let settings = { sfx: true, music: true, shake: true };
+
+            let gameRunning = false;
+            let isPaused = false;
+            let currentMode = "CLASSIC";
+            let isHost = false;
+            let score = 0;
+            let lastTime = 0;
+            let survivalTimer = 0;
+            let screenShake = 0;
+
+            let peer = null;
+            let conn = null;
+
+            // Audio Engine
+            let audioCtx = null;
+            let musicInterval = null;
+
+            function initAudio() {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            function playSynthSound(freq, duration, type = "sine") {
+                if (!audioCtx || !settings.sfx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            }
+
+            function startBackgroundMusic() {
+                initAudio();
+                if (musicInterval) clearInterval(musicInterval);
+                if (!settings.music) return;
+
+                const notes = [220, 247, 261, 293, 329, 349, 392, 440];
+                let step = 0;
+                musicInterval = setInterval(() => {
+                    if (gameRunning && !isPaused) {
+                        playSynthSound(notes[step % notes.length] / 2, 0.15, "triangle");
+                        step++;
+                    }
+                }, 250);
+            }
+
+            function stopBackgroundMusic() {
+                if (musicInterval) clearInterval(musicInterval);
+            }
+
+            // Skin & Shop Database
+            const skins = {
+                cyber: { name: "Cyber", color: "#00f2fe", glow: "#ff007f", style: "neon", cost: 0, unlocked: true },
+                fire: { name: "Fire", color: "#ff3300", glow: "#ffcc00", style: "fire", cost: 50, unlocked: false },
+                gold: { name: "Gold", color: "#ffe600", glow: "#ffffff", style: "metallic", cost: 100, unlocked: false },
+                matrix: { name: "Matrix", color: "#00ff66", glow: "#005511", style: "grid", cost: 150, unlocked: false },
+                void: { name: "Void", color: "#a855f7", glow: "#ec4899", style: "void", cost: 200, unlocked: false },
+                rainbow: { name: "Prism", color: "#ffffff", glow: "#00f2fe", style: "rainbow", cost: 300, unlocked: false },
+                plasma: { name: "Plasma", color: "#ff007f", glow: "#7928ca", style: "pulse", cost: 400, unlocked: false },
+                ice: { name: "Glacier", color: "#38bdf8", glow: "#e0f2fe", style: "frost", cost: 500, unlocked: false }
+            };
+            let equippedSkin = "cyber";
+
+            function updateCurrencyDisplays() {
+                menuCoins.textContent = coins;
+                shopCoins.textContent = coins;
+                coinsUI.textContent = coins;
+            }
+
+            function renderShop() {
+                shopGrid.innerHTML = "";
+                Object.keys(skins).forEach(key => {
+                    const skin = skins[key];
+                    const card = document.createElement("div");
+                    card.className = `skin-card ${equippedSkin === key ? 'equipped' : ''}`;
+                    
+                    let statusText = "";
+                    if (equippedSkin === key) statusText = "EQUIPPED";
+                    else if (skin.unlocked) statusText = "OWNED";
+                    else statusText = `💎 ${skin.cost}`;
+
+                    card.innerHTML = `
+                        <div class="skin-name" style="color:${skin.color};">${skin.name}</div>
+                        <div class="skin-status">${statusText}</div>
+                    `;
+
+                    card.addEventListener("click", () => {
+                        if (skin.unlocked) {
+                            equippedSkin = key;
+                            renderShop();
+                        } else if (coins >= skin.cost) {
+                            coins -= skin.cost;
+                            skin.unlocked = true;
+                            equippedSkin = key;
+                            updateCurrencyDisplays();
+                            renderShop();
+                            playSynthSound(800, 0.2, "square");
+                        }
+                    });
+
+                    shopGrid.appendChild(card);
+                });
+            }
+
+            const p1Paddle = { x: 190, y: 540, w: 100, h: 14, color: '#00f2fe' };
+            const p2Paddle = { x: 190, y: 20, w: 100, h: 14, color: '#ff007f' };
+            let boss = { x: 190, y: 40, w: 120, h: 20, hp: 100, maxHp: 100, vx: 3 };
+
+            let balls = [];
+            let bricks = [];
+            let particles = [];
+            let trail = [];
+
+            const keys = {};
+            window.addEventListener("keydown", (e) => {
+                keys[e.key] = true;
+                if ((e.key === "p" || e.key === "P" || e.key === "Escape") && gameRunning) togglePause();
+            });
+            window.addEventListener("keyup", (e) => keys[e.key] = false);
+
+            canvas.addEventListener("mousemove", (e) => {
+                if (!gameRunning || isPaused) return;
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = (e.clientX - rect.left) - p1Paddle.w / 2;
+                
+                if (currentMode === "PVP" && !isHost) {
+                    p2Paddle.x = mouseX;
+                    clampPaddle(p2Paddle);
+                } else {
+                    p1Paddle.x = mouseX;
+                    clampPaddle(p1Paddle);
+                }
+            });
+
+            function clampPaddle(p) {
+                if (p.x < 0) p.x = 0;
+                if (p.x + p.w > canvas.width) p.x = canvas.width - p.w;
+            }
+
+            function togglePause() {
+                isPaused = !isPaused;
+                if (isPaused) pauseScreen.classList.remove("hidden");
+                else { pauseScreen.classList.add("hidden"); lastTime = performance.now(); }
+            }
+
+            function createParticles(x, y, color, count = 10) {
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x, y,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 6,
+                        size: Math.random() * 4 + 2,
+                        color,
+                        life: 1.0
+                    });
+                }
+            }
+
+            // PVP & Peer Networking
+            function createLobby() {
+                initAudio();
+                const customName = document.getElementById("create-lobby-name").value || "NEON MATCH";
+                const roomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+                
+                peer = new Peer(roomCode);
+                lobbyStatus.textContent = "CREATING LOBBY...";
+
+                peer.on('open', (id) => {
+                    lobbyStatus.textContent = `LOBBY '${customName.toUpperCase()}' OPEN (ID: ${id})`;
+                    isHost = true;
+                    addLobbyToUI(customName, id);
+                });
+
+                peer.on('connection', (connection) => {
+                    conn = connection;
+                    setupDataListeners();
+                    lobbyStatus.textContent = "PLAYER 2 JOINED LOBBY!";
+                    setTimeout(() => { pvpScreen.classList.add("hidden"); triggerLoadingSequence("PVP"); }, 800);
+                });
+            }
+
+            function addLobbyToUI(name, code) {
+                lobbyListContainer.innerHTML = "";
+                const item = document.createElement("div");
+                item.className = "lobby-item";
+                item.innerHTML = `<span><strong>${name}</strong> [${code}]</span> <button onclick="joinLobbyByID('${code}')">JOIN</button>`;
+                lobbyListContainer.appendChild(item);
+            }
+
+            window.joinLobbyByID = function(code) {
+                initAudio();
+                peer = new Peer();
+                lobbyStatus.textContent = `JOINING LOBBY ${code}...`;
+                peer.on('open', () => {
+                    conn = peer.connect(code.toUpperCase());
+                    isHost = false;
+                    setupDataListeners();
+                    conn.on('open', () => {
+                        lobbyStatus.textContent = "CONNECTED TO LOBBY!";
+                        setTimeout(() => { pvpScreen.classList.add("hidden"); triggerLoadingSequence("PVP"); }, 800);
+                    });
+                });
+            };
+
+            function setupDataListeners() {
+                conn.on('data', (data) => {
+                    if (isHost) {
+                        if (data.p2X !== undefined) p2Paddle.x = data.p2X;
+                    } else {
+                        if (data.p1X !== undefined) p1Paddle.x = data.p1X;
+                        if (data.ball) {
+                            balls[0].x = data.ball.x;
+                            balls[0].y = data.ball.y;
+                        }
+                        if (data.score !== undefined) {
+                            score = data.score;
+                            scoreUI.textContent = score;
+                        }
+                    }
+                });
+            }
+
+            function syncOnlineData() {
+                if (!conn || !conn.open) return;
+                if (isHost) {
+                    conn.send({
+                        p1X: p1Paddle.x,
+                        ball: balls[0] ? { x: balls[0].x, y: balls[0].y } : null,
+                        score: score
+                    });
+                } else {
+                    conn.send({ p2X: p2Paddle.x });
+                }
+            }
+
+            // Navigation Handlers
+            document.getElementById("btn-sp-start").addEventListener("click", () => triggerLoadingSequence("CLASSIC"));
+            document.getElementById("btn-survival-start").addEventListener("click", () => triggerLoadingSequence("SURVIVAL"));
+            document.getElementById("btn-speed-start").addEventListener("click", () => triggerLoadingSequence("SPEED DEMON"));
+            document.getElementById("btn-boss-start").addEventListener("click", () => triggerLoadingSequence("BOSS BATTLE"));
+
+            document.getElementById("btn-shop-menu").addEventListener("click", () => {
+                renderShop(); updateCurrencyDisplays();
+                titleScreen.classList.add("hidden"); shopScreen.classList.remove("hidden");
+            });
+            document.getElementById("btn-back-shop").addEventListener("click", () => {
+                shopScreen.classList.add("hidden"); titleScreen.classList.remove("hidden");
+            });
+
+            document.getElementById("btn-pvp-menu").addEventListener("click", () => {
+                titleScreen.classList.add("hidden"); pvpScreen.classList.remove("hidden");
+            });
+            document.getElementById("btn-back-pvp").addEventListener("click", () => {
+                pvpScreen.classList.add("hidden"); titleScreen.classList.remove("hidden");
+            });
+
+            document.getElementById("btn-settings-menu").addEventListener("click", () => {
+                titleScreen.classList.add("hidden"); settingsScreen.classList.remove("hidden");
+            });
+            document.getElementById("btn-back-settings").addEventListener("click", () => {
+                settings.sfx = document.getElementById("setting-sfx").checked;
+                settings.music = document.getElementById("setting-music").checked;
+                settings.shake = document.getElementById("setting-shake").checked;
+                settingsScreen.classList.add("hidden"); titleScreen.classList.remove("hidden");
+            });
+
+            document.getElementById("btn-create-lobby").addEventListener("click", createLobby);
+            document.getElementById("btn-join-direct").addEventListener("click", () => {
+                const code = document.getElementById("direct-code-input").value;
+                if (code) joinLobbyByID(code);
+            });
+
+            document.getElementById("btn-resume").addEventListener("click", () => { if (isPaused) togglePause(); });
+            document.getElementById("btn-pause-quit").addEventListener("click", quitToMenu);
+            document.getElementById("btn-quit-menu").addEventListener("click", quitToMenu);
+
+            function triggerLoadingSequence(mode) {
+                initAudio();
+                titleScreen.classList.add("hidden");
+                loadingScreen.classList.remove("hidden");
+
+                let progress = 0;
+                loadingBar.style.width = "0%";
+                loadingText.textContent = `PREPARING ${mode}...`;
+
+                const interval = setInterval(() => {
+                    progress += 20;
+                    loadingBar.style.width = `${progress}%`;
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        loadingScreen.classList.add("hidden");
+                        startGame(mode);
+                    }
+                }, 150);
+            }
+
+            function createBall(vy = -4, speedMultiplier = 1) {
+                return { 
+                    x: canvas.width / 2, 
+                    y: canvas.height / 2, 
+                    radius: 8, 
+                    vx: (Math.random() > 0.5 ? 4 : -4) * speedMultiplier, 
+                    vy: vy * speedMultiplier, 
+                    color: '#ffe600' 
+                };
+            }
+
+            function initBricks() {
+                bricks = [];
+                const rows = 4, cols = 6, width = 68, height = 18, padding = 8, offsetLeft = 15, offsetTop = 60;
+                const colors = ["#ff007f", "#7928ca", "#00f2fe", "#ffe600"];
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        bricks.push({ x: c * (width + padding) + offsetLeft, y: r * (height + padding) + offsetTop, w: width, h: height, color: colors[r % colors.length], active: true });
+                    }
+                }
+            }
+
+            function startGame(mode) {
+                gameRunning = true; isPaused = false; currentMode = mode;
+                score = 0; survivalTimer = 0; screenShake = 0;
+                particles = []; trail = [];
+                
+                updateCurrencyDisplays();
+                scoreUI.textContent = "0"; modeUI.textContent = mode;
+                
+                p1Paddle.color = skins[equippedSkin].color;
+
+                if (mode === "SPEED DEMON") balls = [createBall(-7, 1.8)];
+                else balls = [createBall()];
+
+                if (mode === "CLASSIC" || mode === "SPEED DEMON") initBricks();
+                else bricks = [];
+
+                if (mode === "BOSS BATTLE") { boss.hp = 100; boss.x = 180; }
+
+                titleScreen.classList.add("hidden"); gameOverScreen.classList.add("hidden"); ui.classList.remove("hidden");
+                startBackgroundMusic();
+                lastTime = performance.now(); requestAnimationFrame(gameLoop);
+            }
+
+            function quitToMenu() {
+                gameRunning = false; isPaused = false;
+                stopBackgroundMusic();
+                updateCurrencyDisplays();
+                pauseScreen.classList.add("hidden"); gameOverScreen.classList.add("hidden"); ui.classList.add("hidden");
+                titleScreen.classList.remove("hidden");
+                if (peer) peer.destroy();
+            }
+
+            function update(dt) {
+                if (!gameRunning || isPaused) return;
+                const ts = dt / 16.66;
+
+                if (screenShake > 0) screenShake -= dt * 0.02;
+
+                if (currentMode === "SURVIVAL") {
+                    survivalTimer += dt;
+                    if (survivalTimer > 7000) {
+                        survivalTimer = 0;
+                        balls.push(createBall(Math.random() > 0.5 ? 4 : -4));
+                        if (settings.shake) screenShake = 5;
+                        playSynthSound(600, 0.2, "sawtooth");
+                    }
+                }
+
+                if (currentMode === "BOSS BATTLE") {
+                    boss.x += boss.vx * ts;
+                    if (boss.x <= 0 || boss.x + boss.w >= canvas.width) boss.vx *= -1;
+                }
+
+                if (currentMode !== "PVP" || isHost) {
+                    if (keys["ArrowLeft"] || keys["a"] || keys["A"]) p1Paddle.x -= 6 * ts;
+                    if (keys["ArrowRight"] || keys["d"] || keys["D"]) p1Paddle.x += 6 * ts;
+                    clampPaddle(p1Paddle);
+                }
+
+                if (currentMode !== "PVP" && currentMode !== "BOSS BATTLE") {
+                    p2Paddle.x += (balls[0].x - (p2Paddle.x + p2Paddle.w / 2)) * 0.08 * ts;
+                    clampPaddle(p2Paddle);
+                } else if (currentMode === "PVP" && !isHost) {
+                    if (keys["ArrowLeft"] || keys["a"] || keys["A"]) p2Paddle.x -= 6 * ts;
+                    if (keys["ArrowRight"] || keys["d"] || keys["D"]) p2Paddle.x += 6 * ts;
+                    clampPaddle(p2Paddle);
+                }
+
+                if (currentMode !== "PVP" || isHost) {
+                    balls.forEach(b => {
+                        b.x += b.vx * ts; b.y += b.vy * ts;
+
+                        trail.push({ x: b.x, y: b.y, life: 1.0 });
+
+                        if (b.x - b.radius < 0 || b.x + b.radius > canvas.width) {
+                            b.vx *= -1;
+                            playSynthSound(300, 0.05);
+                            createParticles(b.x, b.y, "#00f2fe", 6);
+                        }
+
+                        if (currentMode !== "BOSS BATTLE") {
+                            if (b.y - b.radius <= p2Paddle.y + p2Paddle.h && b.y + b.radius >= p2Paddle.y &&
+                                b.x >= p2Paddle.x && b.x <= p2Paddle.x + p2Paddle.w) {
+                                b.vy = Math.abs(b.vy);
+                                playSynthSound(450, 0.08);
+                                createParticles(b.x, b.y, skins[equippedSkin].glow, 10);
+                            }
+                        } else {
+                            if (b.y - b.radius <= boss.y + boss.h && b.y + b.radius >= boss.y &&
+                                b.x >= boss.x && b.x <= boss.x + boss.w) {
+                                b.vy = Math.abs(b.vy);
+                                boss.hp -= 5;
+                                score += 20;
+                                coins += 2;
+                                updateCurrencyDisplays();
+                                scoreUI.textContent = score;
+                                if (settings.shake) screenShake = 6;
+                                playSynthSound(150, 0.15, "sawtooth");
+                                createParticles(b.x, b.y, "#ff0055", 12);
+                            }
+                        }
+
+                        if (b.y + b.radius >= p1Paddle.y && b.y - b.radius <= p1Paddle.y + p1Paddle.h &&
+                            b.x >= p1Paddle.x && b.x <= p1Paddle.x + p1Paddle.w) {
+                            b.vy = -Math.abs(b.vy);
+                            playSynthSound(450, 0.08);
+                            createParticles(b.x, b.y, skins[equippedSkin].glow, 10);
+                        }
+
+                        bricks.forEach(br => {
+                            if (!br.active) return;
+                            if (b.x + b.radius > br.x && b.x - b.radius < br.x + br.w &&
+                                b.y + b.radius > br.y && b.y - b.radius < br.y + br.h) {
+                                br.active = false; b.vy *= -1; 
+                                score += 10;
+                                coins += 1;
+                                updateCurrencyDisplays();
+                                scoreUI.textContent = score;
+                                if (settings.shake) screenShake = 4;
+                                playSynthSound(800, 0.1, "square");
+                                createParticles(br.x + br.w / 2, br.y + br.h / 2, br.color, 14);
+                            }
+                        });
+
+                        if (b.y > canvas.height || b.y < 0) {
+                            b.x = canvas.width / 2; b.y = canvas.height / 2;
+                        }
+                    });
+                }
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.x += p.vx; p.y += p.vy;
+                    p.life -= 0.04;
+                    if (p.life <= 0) particles.splice(i, 1);
+                }
+
+                for (let i = trail.length - 1; i >= 0; i--) {
+                    trail[i].life -= 0.08;
+                    if (trail[i].life <= 0) trail.splice(i, 1);
+                }
+
+                if (currentMode === "PVP") syncOnlineData();
+            }
+
+            function drawPaddleSkin(p, skinKey) {
+                const skin = skins[skinKey] || skins.cyber;
+                
+                ctx.save();
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = skin.glow;
+
+                if (skin.style === "rainbow") {
+                    const gradient = ctx.createLinearGradient(p.x, p.y, p.x + p.w, p.y);
+                    gradient.addColorStop(0, "red"); gradient.addColorStop(0.2, "yellow");
+                    gradient.addColorStop(0.4, "green"); gradient.addColorStop(0.6, "cyan");
+                    gradient.addColorStop(0.8, "blue"); gradient.addColorStop(1, "magenta");
+                    ctx.fillStyle = gradient;
+                } else if (skin.style === "fire") {
+                    const gradient = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.h);
+                    gradient.addColorStop(0, "#ffe600"); gradient.addColorStop(1, "#ff0000");
+                    ctx.fillStyle = gradient;
+                } else {
+                    ctx.fillStyle = skin.color;
+                }
+
+                ctx.beginPath();
+                ctx.roundRect(p.x, p.y, p.w, p.h, 6);
+                ctx.fill();
+
+                ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+                ctx.fillRect(p.x + 4, p.y + 2, p.w - 8, 3);
+                ctx.restore();
+            }
+
+            function draw() {
+                ctx.save();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (screenShake > 0 && settings.shake) {
+                    const rx = (Math.random() - 0.5) * screenShake * 2;
+                    const ry = (Math.random() - 0.5) * screenShake * 2;
+                    ctx.translate(rx, ry);
+                }
+
+                if (!gameRunning) { ctx.restore(); return; }
+
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+                ctx.lineWidth = 1;
+                for (let x = 0; x < canvas.width; x += 30) {
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+                }
+                for (let y = 0; y < canvas.height; y += 30) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+                }
+
+                trail.forEach(t => {
+                    ctx.fillStyle = `rgba(0, 242, 254, ${t.life * 0.4})`;
+                    ctx.beginPath(); ctx.arc(t.x, t.y, 6 * t.life, 0, Math.PI * 2); ctx.fill();
+                });
+
+                bricks.forEach(b => {
+                    if (b.active) {
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = b.color;
+                        ctx.fillStyle = b.color;
+                        ctx.fillRect(b.x, b.y, b.w, b.h);
+                    }
+                });
+
+                drawPaddleSkin(p1Paddle, equippedSkin);
+                if (currentMode !== "BOSS BATTLE") {
+                    drawPaddleSkin(p2Paddle, "plasma");
+                } else {
+                    ctx.save();
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = "#ff0055";
+                    ctx.fillStyle = "#ff0055";
+                    ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
+                    
+                    ctx.fillStyle = "#333";
+                    ctx.fillRect(boss.x, boss.y - 10, boss.w, 5);
+                    ctx.fillStyle = "#00ff66";
+                    ctx.fillRect(boss.x, boss.y - 10, Math.max(0, (boss.hp / boss.maxHp)) * boss.w, 5);
+                    ctx.restore();
+                }
+
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1.0;
+                });
+
+                balls.forEach(b => {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = "#ffe600";
+                    ctx.fillStyle = b.color;
+                    ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2); ctx.fill();
+                });
+
+                ctx.restore();
+            }
+
+            function gameLoop(now) {
+                const dt = Math.min(now - lastTime, 100);
+                lastTime = now;
+                update(dt);
+                draw();
+                if (gameRunning) requestAnimationFrame(gameLoop);
+            }
+
+            updateCurrencyDisplays();
+        });
+    </script>
 </body>
 </html>
