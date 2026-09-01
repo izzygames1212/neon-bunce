@@ -1,4 +1,376 @@
- <script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON BOUNCE: ULTIMATE EDITION</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #05050d;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 480px;
+            height: 640px;
+            background: radial-gradient(circle at center, #0d0b26 0%, #05050d 100%);
+            border-radius: 16px;
+            box-shadow: 0 0 40px rgba(0, 242, 254, 0.2), inset 0 0 15px rgba(255, 0, 127, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(5, 5, 13, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            padding: 20px;
+            transition: opacity 0.3s ease;
+        }
+
+        .hidden {
+            display: none !important;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(45deg, #00f2fe, #4facfe, #ff007f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #a0a0c0;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .btn {
+            width: 220px;
+            padding: 12px 20px;
+            margin: 8px 0;
+            background: linear-gradient(90deg, rgba(0, 242, 254, 0.1), rgba(255, 0, 127, 0.1));
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: linear-gradient(90deg, #00f2fe, #ff007f);
+            border-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .currency-container {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffe600;
+            z-index: 20;
+        }
+
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .hud-element {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .hud-score {
+            color: #00f2fe;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 360px;
+            margin-bottom: 20px;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .skin-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .skin-card:hover {
+            border-color: #00f2fe;
+            background: rgba(0, 242, 254, 0.1);
+        }
+
+        .skin-card.equipped {
+            border-color: #ff007f;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+        }
+
+        .skin-name {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .skin-status {
+            font-size: 10px;
+            color: #a0a0c0;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 220px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: 6px;
+            color: #fff;
+            text-align: center;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #00f2fe;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00f2fe, #ff007f);
+            transition: width 0.2s ease;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 220px;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .lobby-list {
+            width: 100%;
+            max-width: 320px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        .lobby-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .lobby-item button {
+            padding: 4px 8px;
+            font-size: 10px;
+            width: auto;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Canvas -->
+        <canvas id="gameCanvas" width="480" height="640"></canvas>
+
+        <!-- In-Game HUD -->
+        <div id="ui" class="hidden">
+            <div class="hud-element hud-score">SCORE: <span id="score-ui">0</span></div>
+            <div class="hud-element" style="color:#a0a0c0; font-size:12px;" id="mode-ui">CLASSIC</div>
+            <div class="hud-element" style="color:#ffe600;">💎 <span id="coins-ui">0</span></div>
+        </div>
+
+        <!-- Title Screen -->
+        <div id="title-screen" class="screen">
+            <div class="currency-container">💎 <span id="menu-coins">100</span></div>
+            <h1>NEON BOUNCE</h1>
+            <div class="subtitle">ULTIMATE EDITION</div>
+            
+            <button class="btn" id="btn-sp-start">Classic Bricks</button>
+            <button class="btn" id="btn-survival-start">Survival Mode</button>
+            <button class="btn" id="btn-speed-start">Speed Demon</button>
+            <button class="btn" id="btn-boss-start">Boss Battle</button>
+            <button class="btn" id="btn-local2p-start">Local 2-Player</button>
+            <button class="btn" id="btn-pvp-menu">Online PVP</button>
+            <button class="btn" id="btn-shop-menu">Paddle Shop</button>
+            <button class="btn" id="btn-settings-menu">Settings</button>
+        </div>
+
+        <!-- Shop Screen -->
+        <div id="shop-screen" class="screen hidden">
+            <div class="currency-container">💎 <span id="shop-coins">100</span></div>
+            <h1>PADDLE SHOP</h1>
+            <div class="subtitle">SELECT OR UNLOCK STYLES & BUNDLES</div>
+            
+            <div class="shop-grid" id="shop-grid"></div>
+
+            <button class="btn" id="btn-back-shop">Back to Menu</button>
+        </div>
+
+        <!-- PVP Lobby Screen -->
+        <div id="pvp-screen" class="screen hidden">
+            <h1>ONLINE LOBBY</h1>
+            <div class="subtitle" id="lobby-status">CONNECTING TO PEER NETWORK...</div>
+
+            <div class="input-group">
+                <input type="text" id="create-lobby-name" placeholder="Lobby Name" maxlength="12">
+                <button class="btn" id="btn-create-lobby">Create Room</button>
+            </div>
+
+            <div style="margin: 10px 0; font-size: 12px; color: #a0a0c0;">OR JOIN ROOM CODE</div>
+
+            <div class="input-group">
+                <input type="text" id="direct-code-input" placeholder="Enter Room Code" maxlength="6">
+                <button class="btn" id="btn-join-direct">Join Code</button>
+            </div>
+
+            <div class="lobby-list" id="lobby-list-container"></div>
+
+            <button class="btn" id="btn-back-pvp">Back</button>
+        </div>
+
+        <!-- Settings Screen -->
+        <div id="settings-screen" class="screen hidden">
+            <h1>SETTINGS</h1>
+            <div class="subtitle">PREFERENCES</div>
+
+            <div class="setting-row">
+                <span>Sound Effects</span>
+                <input type="checkbox" id="setting-sfx" checked>
+            </div>
+            <div class="setting-row">
+                <span>Synth Music</span>
+                <input type="checkbox" id="setting-music" checked>
+            </div>
+            <div class="setting-row">
+                <span>Screen Shake</span>
+                <input type="checkbox" id="setting-shake" checked>
+            </div>
+
+            <button class="btn" id="btn-back-settings" style="margin-top: 20px;">Save & Back</button>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen hidden">
+            <h1 id="loading-text">LOADING...</h1>
+            <div class="progress-bar">
+                <div class="progress-fill" id="loading-bar"></div>
+            </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="pause-screen" class="screen hidden">
+            <h1>PAUSED</h1>
+            <button class="btn" id="btn-resume">Resume</button>
+            <button class="btn" id="btn-pause-quit">Quit to Menu</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="screen hidden">
+            <h1 id="over-title">GAME OVER</h1>
+            <div class="subtitle" id="winner-text">PLAY AGAIN?</div>
+            <button class="btn" id="btn-quit-menu">Main Menu</button>
+        </div>
+    </div>
+
+    <script>
         document.addEventListener("DOMContentLoaded", () => {
             const canvas = document.getElementById("gameCanvas");
             const ctx = canvas.getContext("2d");
@@ -296,7 +668,6 @@
             document.getElementById("btn-speed-start").addEventListener("click", () => triggerLoadingSequence("SPEED DEMON"));
             document.getElementById("btn-boss-start").addEventListener("click", () => triggerLoadingSequence("BOSS BATTLE"));
 
-            // Dynamic setup for Local 2P button if present in HTML, else fallback
             const btnLocal2P = document.getElementById("btn-local2p-start");
             if (btnLocal2P) {
                 btnLocal2P.addEventListener("click", () => triggerLoadingSequence("LOCAL 2P"));
@@ -435,13 +806,11 @@
                     if (boss.x <= 0 || boss.x + boss.w >= canvas.width) boss.vx *= -1;
                 }
 
-                // --- CONTROLS IMPLEMENTATION ---
+                // Controls
                 if (currentMode === "LOCAL 2P") {
-                    // Player 1 (Bottom): Arrow Keys
                     if (keys["ArrowLeft"]) p1Paddle.x -= 6 * ts;
                     if (keys["ArrowRight"]) p1Paddle.x += 6 * ts;
 
-                    // Player 2 (Top): WASD Keys
                     if (keys["a"] || keys["A"]) p2Paddle.x -= 6 * ts;
                     if (keys["d"] || keys["D"]) p2Paddle.x += 6 * ts;
 
@@ -478,13 +847,12 @@
                             playSynthSound(300, 0.05);
                         }
 
-                        // Top boundary collision (Non-PVP & Non-Local2P modes)
+                        // Top boundary collision
                         if (currentMode !== "PVP" && currentMode !== "LOCAL 2P" && b.y - b.radius <= 0) {
                             b.y = b.radius;
                             b.vy *= -1;
                             playSynthSound(350, 0.05);
                         } else if (currentMode === "LOCAL 2P" && b.y - b.radius <= 0) {
-                            // Point scored by P1 in Local 2P mode
                             b.out = true;
                             score += 50;
                             scoreUI.textContent = score;
@@ -647,7 +1015,7 @@
                 ctx.fillStyle = p1Paddle.color;
                 ctx.fillRect(p1Paddle.x, p1Paddle.y, p1Paddle.w, p1Paddle.h);
 
-                // Draw P2 Paddle (Shown in PVP, Survival, or Local 2P)
+                // Draw P2 Paddle
                 if (currentMode === "PVP" || currentMode === "SURVIVAL" || currentMode === "LOCAL 2P") {
                     ctx.shadowColor = p2Paddle.color;
                     ctx.fillStyle = p2Paddle.color;
